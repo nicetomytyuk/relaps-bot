@@ -104,11 +104,11 @@ export class EventBuilder {
     
         if (this.event.equipment?.length === 1 && this.event.equipment[0] === '-') {
             for (let equipment of defaultEquipment) {
-                script += `-${equipment}\n`
+                script += `- ${equipment}\n`
             }
         } else {
             for (let equipment of this.event.equipment || []) {
-                script += `-${equipment}\n`
+                script += `- ${equipment}\n`
             }
         }
         script += `\n`

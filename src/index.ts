@@ -1,4 +1,4 @@
-import { Bot } from "grammy";
+import { Bot, Context } from "grammy";
 import dotenv from 'dotenv';
 import { EventBuilder } from "./models/event-builder";
 
@@ -7,28 +7,110 @@ dotenv.config();
 const BOT_TOKEN = process.env.BOT_TOKEN || '';
 
 const states = new Map<number, EventBuilder>();
+const groups = new Map();
 
 //Create a new bot
 const bot = new Bot(BOT_TOKEN);
 
 bot.command('start', async (ctx) => {
-    const chatId = ctx.chat.id;
-    states.set(chatId, new EventBuilder());
+    if (ctx.chat.type === 'group') {
+        if (await isAdmin(ctx)) {
+            const adminId = ctx.from?.id;
+            const chatId = ctx.chat.id;
 
-    await ctx.reply('Benvenuto!\nTi darò una mano a creare il tuo evento di escursionismo.');
-    await ctx.reply('Inserisci il nome dell\'evento (es., Giro ad anello Monte Rosa):')
+            if (!adminId) return;
+
+            groups.set(adminId, chatId);
+            await ctx.reply('Benvenuto nel bot di escursionismo di @relaps_hiking!', {
+                reply_markup: {
+                    inline_keyboard: [
+                        [{ text: 'Crea il tuo evento!', url: 'https://t.me/igor_mytyuk_bot?start=start' }]
+                    ]
+                }
+            });
+        } else {
+            await ctx.reply('Non sei autorizzato ad usare questo bot.');
+            return;
+        }
+    }else if (ctx.chat.type === 'private') {
+         const adminId = ctx.from?.id;
+         const chatId = ctx.chat.id;
+
+         if (!adminId) return;
+
+         if (!groups.has(adminId)) {
+            await ctx.reply('Per utilizzare il bot, invia il comando /start da una chat di gruppo.');
+            return;
+         }
+
+         states.set(chatId, new EventBuilder());
+        
+         await ctx.reply('Ti darò una mano a creare il tuo evento di escursionismo.');
+         await ctx.reply('Inserisci il nome dell\'evento (es., Giro ad anello Monte Rosa):')
+    }
+});
+
+async function isAdmin(ctx: Context) {
+    const admins = await ctx.getChatAdministrators();
+    console.log(admins);
+    return admins.some(admin => admin.user.id === ctx.from?.id);
+}
+
+bot.callbackQuery('publish', async (ctx) => {
+    const adminId = ctx.from?.id;
+
+    if (!adminId) return;
+    if (!groups.has(adminId)) {
+        await ctx.reply('Per utilizzare il bot, invia il comando /start da una chat di gruppo.');
+        return;
+    }
+
+    const chatId = groups.get(adminId);
+    const builder = states.get(ctx.callbackQuery.from.id);
+
+    if (!builder) {
+        await ctx.reply('Per favore, inizia il processo di creazione di un nuovo evento inviando il comando /start da una chat di gruppo.');
+        return;
+    }
+
+    const script = builder.formatEvent();
+    const photoId = builder.getPhotoId();
+
+    if (photoId) {
+        const message = await ctx.api.sendPhoto(chatId, photoId, { caption: script, parse_mode: 'Markdown' });
+        await ctx.api.pinChatMessage(message.chat.id, message.message_id, { disable_notification: true });
+    } else {
+        const message = await ctx.api.sendMessage(chatId, script, { parse_mode: 'Markdown', link_preview_options: { is_disabled: true } });
+        await ctx.api.pinChatMessage(message.chat.id, message.message_id, { disable_notification: true });
+    }
+    
+    const poll = await ctx.api.sendPoll(
+        chatId,
+        builder.getFullTitle(),
+        ['Ci sono 🧗‍♂️', 'Non ci sono 😥', 'Ho bisogno di un passaggio 🛒'],
+        {
+            is_anonymous: false,
+            allows_multiple_answers: true
+        }
+    )
+
+    await ctx.api.pinChatMessage(chatId, poll.message_id, { disable_notification: true });
+
+    await ctx.reply('L\'evento è stato pubblicato correttamente!');
+});
+
+bot.callbackQuery('cancel', async (ctx) => {
+    states.delete(ctx.callbackQuery.from.id);
+
+    await ctx.reply('L\'evento è stato annullato.');
+    await ctx.reply('Puoi riprendere il processo di creazione di un nuovo evento inviando il comando /start da una chat di gruppo.');
 });
 
 bot.on('message', async (ctx) => {
     const chatId = ctx.chat.id;
-    const text = ctx.message.text;
+    const text = ctx.message.text || '';
 
     const builder = states.get(chatId);
-
-    if (!text) {
-        await ctx.reply('Invia il comando /start per iniziare!');
-        return;
-    }
 
     if (!builder) {
         await ctx.reply('Invia il comando /start per iniziare!');
@@ -43,7 +125,7 @@ bot.on('message', async (ctx) => {
             break;
         case 2:
             builder.setDescription(text);
-            await ctx.reply('Carica un\'immagine per descrivere almeglio l\'evento:');
+            await ctx.reply('Carica un\'immagine per descrivere al meglio l\'evento:');
             states.set(chatId, builder);
             break;
         case 3:
@@ -86,7 +168,7 @@ bot.on('message', async (ctx) => {
             break;
         case 9:
             builder.setTotalDistance(text);
-            await ctx.reply('Inserisci l\'equipaggiamento necessario\n(es., Scarponi, Bastoncini)\n:');
+            await ctx.reply('Inserisci l\'equipaggiamento necessario\n(es., Scarponi, Bastoncini):');
             states.set(chatId, builder);
             break;
         case 10:
@@ -96,37 +178,45 @@ bot.on('message', async (ctx) => {
             break;
         case 11:
             builder.setItinerary(text);
-            await ctx.reply('Il tuo evento è stato creato con successo!');
-
+     
             const photoId = builder.getPhotoId();
+            const script = builder.formatEvent();
             if (photoId) {
-                const script = builder.formatEvent();
-
-                await ctx.replyWithPhoto(
-                    photoId,
-                    {
-                        caption: script,
-                        parse_mode: 'Markdown',
-                    }
-                )
+                await ctx.replyWithPhoto(photoId, { caption: script, parse_mode: 'Markdown' ,                 reply_markup: {
+                    inline_keyboard: [
+                        [
+                            {
+                                text: 'Pubblica',
+                                callback_data: 'publish'
+                            },
+                            {
+                                text: 'Annulla',
+                                callback_data: 'cancel'
+                            }
+                        ]
+                    ]
+                }});
+            } else {
+                await ctx.reply(script, { parse_mode: 'Markdown', link_preview_options: { is_disabled: true }, reply_markup: {
+                    inline_keyboard: [
+                        [
+                            {
+                                text: 'Pubblica',
+                                callback_data: 'publish'
+                            },
+                            {
+                                text: 'Annulla',
+                                callback_data: 'cancel'
+                            }
+                        ]
+                    ]
+                } });
             }
 
-            await ctx.api.sendPoll(
-                chatId,
-                builder.getFullTitle(),
-                ['Ci sono 🧗‍♂️', 'Non ci sono 😥', 'Ho bisogno di un passaggio 🛒'],
-                {
-                    is_anonymous: false,
-                    allows_multiple_answers: true
-                }
-            )
-
-            states.delete(chatId);
             break;
         default:
             await ctx.reply('Comando non riconosciuto. Invia il comando /start per iniziare!');
             break;
-
     }
 });
 

@@ -12,7 +12,7 @@ const groups = new Map();
 //Create a new bot
 const bot = new Bot(BOT_TOKEN);
 
-bot.command('start', async (ctx) => {
+bot.command('hike', async (ctx) => {
     if (ctx.chat.type === 'group') {
         if (await isAdmin(ctx)) {
             const adminId = ctx.from?.id;
@@ -21,6 +21,7 @@ bot.command('start', async (ctx) => {
             if (!adminId) return;
 
             groups.set(adminId, chatId);
+
             await ctx.reply('Benvenuto nel bot di escursionismo di @relaps_hiking!', {
                 reply_markup: {
                     inline_keyboard: [
@@ -32,7 +33,14 @@ bot.command('start', async (ctx) => {
             await ctx.reply('Non sei autorizzato ad usare questo bot.');
             return;
         }
-    }else if (ctx.chat.type === 'private') {
+    }else {
+        await ctx.reply('Questo bot è utilizzabile solo in chat di gruppo.');
+        return;
+    }
+});
+
+bot.command('start', async (ctx) => {
+if (ctx.chat.type === 'private') {
          const adminId = ctx.from?.id;
          const chatId = ctx.chat.id;
 
@@ -47,12 +55,14 @@ bot.command('start', async (ctx) => {
         
          await ctx.reply('Ti darò una mano a creare il tuo evento di escursionismo.');
          await ctx.reply('Inserisci il nome dell\'evento (es., Giro ad anello Monte Rosa):')
+    }else {
+        await ctx.reply('Questo comando è utilizzabile solo in chat privata.');
+        return;
     }
 });
 
 async function isAdmin(ctx: Context) {
     const admins = await ctx.getChatAdministrators();
-    console.log(admins);
     return admins.some(admin => admin.user.id === ctx.from?.id);
 }
 
@@ -61,7 +71,7 @@ bot.callbackQuery('publish', async (ctx) => {
 
     if (!adminId) return;
     if (!groups.has(adminId)) {
-        await ctx.reply('Per utilizzare il bot, invia il comando /start da una chat di gruppo.');
+        await ctx.reply('Per utilizzare il bot, invia il comando /hike da una chat di gruppo.');
         return;
     }
 
@@ -78,10 +88,20 @@ bot.callbackQuery('publish', async (ctx) => {
 
     if (photoId) {
         const message = await ctx.api.sendPhoto(chatId, photoId, { caption: script, parse_mode: 'Markdown' });
-        await ctx.api.pinChatMessage(message.chat.id, message.message_id, { disable_notification: true });
+
+        try {
+            await ctx.api.pinChatMessage(message.chat.id, message.message_id, { disable_notification: true });
+        }catch (e) {
+            await ctx.reply('Impossibile pinnare il messaggio, il bot deve essere un amministratore!');
+        }
     } else {
         const message = await ctx.api.sendMessage(chatId, script, { parse_mode: 'Markdown', link_preview_options: { is_disabled: true } });
-        await ctx.api.pinChatMessage(message.chat.id, message.message_id, { disable_notification: true });
+
+        try {
+            await ctx.api.pinChatMessage(message.chat.id, message.message_id, { disable_notification: true });
+        }catch (e) {
+            await ctx.reply('Impossibile pinnare il messaggio, il bot deve essere un amministratore!');
+        }
     }
     
     const poll = await ctx.api.sendPoll(
@@ -94,7 +114,11 @@ bot.callbackQuery('publish', async (ctx) => {
         }
     )
 
-    await ctx.api.pinChatMessage(chatId, poll.message_id, { disable_notification: true });
+    try {
+        await ctx.api.pinChatMessage(poll.chat.id, poll.message_id, { disable_notification: true });
+    }catch (e) {
+        await ctx.reply('Impossibile pinnare il messaggio, il bot deve essere un amministratore!');
+    }
 
     await ctx.reply('L\'evento è stato pubblicato correttamente!');
 });
@@ -107,13 +131,15 @@ bot.callbackQuery('cancel', async (ctx) => {
 });
 
 bot.on('message', async (ctx) => {
+    if (ctx.chat.type !== 'private') return;
+
     const chatId = ctx.chat.id;
     const text = ctx.message.text || '';
 
     const builder = states.get(chatId);
 
     if (!builder) {
-        await ctx.reply('Invia il comando /start per iniziare!');
+        await ctx.reply('Invia il comando /hike per iniziare!');
         return;
     }
 
@@ -169,6 +195,7 @@ bot.on('message', async (ctx) => {
         case 9:
             builder.setTotalDistance(text);
             await ctx.reply('Inserisci l\'equipaggiamento necessario\n(es., Scarponi, Bastoncini):');
+            await ctx.reply('Puoi inserire l\'equipaggiamento di default inviando "-"');
             states.set(chatId, builder);
             break;
         case 10:

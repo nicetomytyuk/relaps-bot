@@ -9,6 +9,7 @@ const bot = createBot(config.BOT_TOKEN);
 const server = await createServer(bot);
 
 export default async (request: IncomingMessage, response: ServerResponse) => {
+  console.log(request);
   await server.ready();
   server.server.emit("request", request, response);
 };

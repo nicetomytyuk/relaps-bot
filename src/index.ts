@@ -1,10 +1,11 @@
-import { Bot, Context } from "grammy";
+import { Bot, Context, webhookCallback } from "grammy";
 import dotenv from 'dotenv';
 import { EventBuilder } from "./models/event-builder";
 
 dotenv.config();
 
 const BOT_TOKEN = process.env.BOT_TOKEN || '';
+if (!BOT_TOKEN) throw new Error("BOT_TOKEN is unset");
 
 const states = new Map<number, EventBuilder>();
 const groups = new Map();
@@ -282,3 +283,5 @@ bot.on('message', async (ctx) => {
 
 //Start the Bot
 bot.start();
+
+export default webhookCallback(bot, "std/http");

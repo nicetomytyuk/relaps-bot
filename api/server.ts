@@ -4,6 +4,7 @@ import { config } from "#root/config.js";
 import { createServer } from "#root/server/index.js";
 import { IncomingMessage, ServerResponse } from "node:http";
 
+console.log(config.BOT_TOKEN);
 const bot = createBot(config.BOT_TOKEN);
 const server = await createServer(bot);
 

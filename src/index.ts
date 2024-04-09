@@ -22,40 +22,61 @@ bot.command('hike', async (ctx) => {
 
             groups.set(adminId, chatId);
 
-            await ctx.reply('Benvenuto nel bot di escursionismo di @relaps_hiking!', {
+            const message = await ctx.reply('Benvenuto nel bot di escursionismo di @relaps_hiking!', {
                 reply_markup: {
                     inline_keyboard: [
-                        [{ text: 'Crea il tuo evento!', url: 'https://t.me/igor_mytyuk_bot?start=start' }]
+                        [{ text: 'Crea il tuo evento!', url: 'https://t.me/relaps_bot?start=start' }]
                     ]
                 }
             });
+
+            setTimeout(async () => {
+                try {
+                    await ctx.deleteMessage();
+                    await ctx.api.deleteMessage(chatId, message.message_id);
+                }catch (error) {
+                    console.error(error);
+                }
+            }, 10000);
+
         } else {
-            await ctx.reply('Non sei autorizzato ad usare questo bot.');
+            const chatId = ctx.chat.id;
+            const message = await ctx.reply('Non sei autorizzato ad usare questo bot.');
+
+            setTimeout(async () => {
+                try {
+                    await ctx.deleteMessage();
+                    await ctx.api.deleteMessage(chatId, message.message_id);
+                }catch (error) {
+                    console.error(error);
+                }
+            }, 5000);
+
             return;
         }
-    }else {
-        await ctx.reply('Questo bot è utilizzabile solo in chat di gruppo.');
+    } else {
+        await ctx.reply('Questo comando è utilizzabile solo in chat di gruppo.');
         return;
     }
 });
 
 bot.command('start', async (ctx) => {
-if (ctx.chat.type === 'private') {
-         const adminId = ctx.from?.id;
-         const chatId = ctx.chat.id;
+    if (ctx.chat.type === 'private') {
+        const adminId = ctx.from?.id;
+        const chatId = ctx.chat.id;
 
-         if (!adminId) return;
+        if (!adminId) return;
 
-         if (!groups.has(adminId)) {
+        if (!groups.has(adminId)) {
             await ctx.reply('Per utilizzare il bot, invia il comando /start da una chat di gruppo.');
             return;
-         }
+        }
 
-         states.set(chatId, new EventBuilder());
-        
-         await ctx.reply('Ti darò una mano a creare il tuo evento di escursionismo.');
-         await ctx.reply('Inserisci il nome dell\'evento (es., Giro ad anello Monte Rosa):')
-    }else {
+        states.set(chatId, new EventBuilder());
+
+        await ctx.reply('Ti darò una mano a creare il tuo evento di escursionismo.');
+        await ctx.reply('Inserisci il nome dell\'evento (es., Giro ad anello Monte Rosa):')
+    } else {
         await ctx.reply('Questo comando è utilizzabile solo in chat privata.');
         return;
     }
@@ -91,7 +112,7 @@ bot.callbackQuery('publish', async (ctx) => {
 
         try {
             await ctx.api.pinChatMessage(message.chat.id, message.message_id, { disable_notification: true });
-        }catch (e) {
+        } catch (e) {
             await ctx.reply('Impossibile pinnare il messaggio, il bot deve essere un amministratore!');
         }
     } else {
@@ -99,11 +120,11 @@ bot.callbackQuery('publish', async (ctx) => {
 
         try {
             await ctx.api.pinChatMessage(message.chat.id, message.message_id, { disable_notification: true });
-        }catch (e) {
+        } catch (e) {
             await ctx.reply('Impossibile pinnare il messaggio, il bot deve essere un amministratore!');
         }
     }
-    
+
     const poll = await ctx.api.sendPoll(
         chatId,
         builder.getFullTitle(),
@@ -116,7 +137,7 @@ bot.callbackQuery('publish', async (ctx) => {
 
     try {
         await ctx.api.pinChatMessage(poll.chat.id, poll.message_id, { disable_notification: true });
-    }catch (e) {
+    } catch (e) {
         await ctx.reply('Impossibile pinnare il messaggio, il bot deve essere un amministratore!');
     }
 
@@ -127,7 +148,15 @@ bot.callbackQuery('cancel', async (ctx) => {
     states.delete(ctx.callbackQuery.from.id);
 
     await ctx.reply('L\'evento è stato annullato.');
-    await ctx.reply('Puoi riprendere il processo di creazione di un nuovo evento inviando il comando /start da una chat di gruppo.');
+    await ctx.answerCallbackQuery({
+        url: 'https://t.me/relaps_bot?start=start'
+    });
+});
+
+bot.callbackQuery('start', async (ctx) => {
+    await ctx.answerCallbackQuery({
+        url: 'https://t.me/relaps_bot?start=start'
+    })
 });
 
 bot.on('message', async (ctx) => {
@@ -205,39 +234,43 @@ bot.on('message', async (ctx) => {
             break;
         case 11:
             builder.setItinerary(text);
-     
+
             const photoId = builder.getPhotoId();
             const script = builder.formatEvent();
             if (photoId) {
-                await ctx.replyWithPhoto(photoId, { caption: script, parse_mode: 'Markdown' ,                 reply_markup: {
-                    inline_keyboard: [
-                        [
-                            {
-                                text: 'Pubblica',
-                                callback_data: 'publish'
-                            },
-                            {
-                                text: 'Annulla',
-                                callback_data: 'cancel'
-                            }
+                await ctx.replyWithPhoto(photoId, {
+                    caption: script, parse_mode: 'Markdown', reply_markup: {
+                        inline_keyboard: [
+                            [
+                                {
+                                    text: 'Pubblica',
+                                    callback_data: 'publish'
+                                },
+                                {
+                                    text: 'Annulla',
+                                    callback_data: 'cancel'
+                                }
+                            ]
                         ]
-                    ]
-                }});
+                    }
+                });
             } else {
-                await ctx.reply(script, { parse_mode: 'Markdown', link_preview_options: { is_disabled: true }, reply_markup: {
-                    inline_keyboard: [
-                        [
-                            {
-                                text: 'Pubblica',
-                                callback_data: 'publish'
-                            },
-                            {
-                                text: 'Annulla',
-                                callback_data: 'cancel'
-                            }
+                await ctx.reply(script, {
+                    parse_mode: 'Markdown', link_preview_options: { is_disabled: true }, reply_markup: {
+                        inline_keyboard: [
+                            [
+                                {
+                                    text: 'Pubblica',
+                                    callback_data: 'publish'
+                                },
+                                {
+                                    text: 'Annulla',
+                                    callback_data: 'cancel'
+                                }
+                            ]
                         ]
-                    ]
-                } });
+                    }
+                });
             }
 
             break;

@@ -115,10 +115,11 @@ export class EventBuilder {
     
         script += `🧗‍♂️ [Itinerario](${this.event.itinerary})\n\n`
     
-        script += "Considerazioni finali:\n\n"
-        script += "È importante avere un passo sicuro ed un sufficiente allenamento per poter affrontare quest'uscita!\n\n";
-        script += "*Ricordo inoltre che non siamo guide alpine e per tanto ognuno è responsabile della propria incolumità, come gruppo di amici invece siamo sempre disposti ad aiutarvi come riusciamo!*"
-    
+        script += "*Considerazioni finali:*\n\n"
+        
+        script += "‼ *Ricordo inoltre che non siamo guide alpine e per tanto ognuno è responsabile della propria incolumità!*\n\n"
+        script += "⚠️ *Attenzione: Questa escursione è riservata esclusivamente a partecipanti maggiorenni.*\n\n";
+
         return script;
     }
 }

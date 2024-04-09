@@ -1,8 +1,9 @@
 {
-    "functions": {
-      "api/server.ts": {
-        "memory": 1024,
-        "maxDuration": 10
-      }
+  "outputDirectory": "build",
+  "routes": [
+    {
+      "src": "/.*",
+      "dest": "/api/server.ts"
     }
-  }
+  ]
+}

@@ -1,4 +1,4 @@
-import { Bot, Context, webhookCallback } from "grammy";
+import { Bot, Context } from "grammy";
 import dotenv from 'dotenv';
 import { EventBuilder } from "./models/event-builder";
 
@@ -281,7 +281,4 @@ bot.on('message', async (ctx) => {
     }
 });
 
-//Start the Bot
-bot.start();
-
-export default webhookCallback(bot, "std/http");
+export default bot;

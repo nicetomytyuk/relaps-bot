@@ -1,5 +1,13 @@
 import { Event } from "./event.js";
 
+const defaultEquipment = [
+    'Scarponi da Trekking',
+    'Abbigliamento adatto alle condizioni climatiche',
+    'Bastoncini da Trekking',
+    'Zaino da trekking',
+    'Pranzo al sacco, snack leggeri e bevande'
+];
+
 export class EventBuilder {
     private step: number;
     private event: Event;
@@ -19,7 +27,7 @@ export class EventBuilder {
         this.step += 1;
     }
 
-    setPhotoId(photoId: string) {
+    setPhotoId(photoId: string | null) {
         this.event.photoId = photoId;
         this.step += 1;
     }
@@ -54,8 +62,12 @@ export class EventBuilder {
         this.step += 1;
     }
 
-    setEquipment(equipment: string[]) {
-        this.event.equipment = equipment;
+    setEquipment(equipment: string) {
+        if (equipment === '-') {
+            this.event.equipment = [...defaultEquipment];
+        } else {
+            this.event.equipment = [...defaultEquipment, ...equipment.split(',')];
+        }
         this.step += 1;
     }
 
@@ -77,48 +89,44 @@ export class EventBuilder {
     }
 
     formatEvent() {
-        const defaultEquipment = [
-            'Abbigliamento adatto alle condizioni climatiche (possibilmente impermeabile)',
-            '*Scarponi da Trekking*',
-            'Bastoncini da Trekking',
-            'Zaino da trekking',
-            'Pranzo al sacco, snack leggeri e bevande'
-        ];
-    
-        let script = `*${this.getFullTitle()}*\n\n`
+        let script = `*${this.getFullTitle().replace(/[-_.!]/g, '\\$&')}*\n\n`
     
         if (this.event.description !== '-') {
-            script += `${this.event.description}\n\n`
+            script += `_${this.event.description?.replace(/[-_.!]/g, '\\$&')}_\n\n`
         }
     
-        script += `📆 Data: *${this.event.date}*\n`
-        script += `💨 Orario di Incontro e Partenza: *${this.event.startTime}*\n\n`
+        script += `📆 Data: *${this.event.date?.replace(/[-_.!]/g, '\\$&')}*\n`
+        script += `💨 Orario di Incontro e Partenza: *${this.event.startTime?.replace(/[-_.!]/g, '\\$&')}*\n\n`
     
-        script += `📍 [Punto di Incontro](${this.event.meetingPoint})\n`
-        script += `🔰 Livello di Difficoltà: *${this.event.difficultyLevel}*\n\n`
+        script += `📍 [Punto di Incontro](${this.event.meetingPoint})\n\n`
+        script += `🔰 Livello di Difficoltà: *${this.event.difficultyLevel}*\n`
+
+        if (this.event.difficultyLevel?.toLowerCase() === 'difficile') {
+            script += "‼ *Questo percorso non è adatto ai principianti\\.*\n";
+        }
+
+        script += "\n"
     
         script += `⏳ Durata: *${this.event.duration}*\n`
         script += `🗺 Distanza totale: *${this.event.totalDistance}*\n\n`
     
         script += `🧥 Attrezzatura consigliata:\n\n`
     
-        if (this.event.equipment?.length === 1 && this.event.equipment[0] === '-') {
-            for (let equipment of defaultEquipment) {
-                script += `- ${equipment}\n`
-            }
-        } else {
-            for (let equipment of this.event.equipment || []) {
-                script += `- ${equipment}\n`
-            }
+        for (let equipment of this.event.equipment || []) {
+            script += `• ${equipment}\n`
         }
+        
         script += `\n`
     
         script += `🧗‍♂️ [Itinerario](${this.event.itinerary})\n\n`
     
-        script += "*Considerazioni finali:*\n\n"
+        script += "__*Consigli e Avvertenze:*__\n\n"
         
-        script += "‼ *Ricordo inoltre che non siamo guide alpine e per tanto ognuno è responsabile della propria incolumità!*\n\n"
-        script += "⚠️ *Attenzione: Questa escursione è riservata esclusivamente a partecipanti maggiorenni.*\n\n";
+        script += "❗ *Ricordo inoltre che non siamo guide alpine e per tanto ognuno è responsabile della propria incolumità\\!*\n\n"
+
+        script += "‼ *È dovere dell'interessato/a valutare, secondo il suo livello di preparazione, se è in grado di affrontare il percorso o meno\\.*\n\n"
+        
+        script += "⚠️ __*Attenzione: Questa escursione è riservata esclusivamente a partecipanti maggiorenni\\.*__\n\n";
 
         return script;
     }

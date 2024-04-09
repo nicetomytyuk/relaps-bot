@@ -70,6 +70,7 @@ export function createBot(token: string) {
             states.set(chatId, new EventBuilder());
 
             await ctx.reply('Ti darò una mano a creare il tuo evento di escursionismo.');
+            await ctx.reply(`_Puoi saltare i passaggi opzionali inviando "-" in chat!_`, { parse_mode: 'Markdown' });
             await ctx.reply('Inserisci il nome dell\'evento (es., Giro ad anello Monte Rosa):')
         } else {
             await ctx.reply('Questo comando è utilizzabile solo in chat privata.');
@@ -103,7 +104,7 @@ export function createBot(token: string) {
         const photoId = builder.getPhotoId();
 
         if (photoId) {
-            const message = await ctx.api.sendPhoto(chatId, photoId, { caption: script, parse_mode: 'Markdown' });
+            const message = await ctx.api.sendPhoto(chatId, photoId, { caption: script, parse_mode: 'MarkdownV2' });
 
             try {
                 await ctx.api.pinChatMessage(message.chat.id, message.message_id, { disable_notification: true });
@@ -111,7 +112,7 @@ export function createBot(token: string) {
                 await ctx.reply('Impossibile pinnare il messaggio, il bot deve essere un amministratore!');
             }
         } else {
-            const message = await ctx.api.sendMessage(chatId, script, { parse_mode: 'Markdown', link_preview_options: { is_disabled: true } });
+            const message = await ctx.api.sendMessage(chatId, script, { parse_mode: 'MarkdownV2', link_preview_options: { is_disabled: true } });
 
             try {
                 await ctx.api.pinChatMessage(message.chat.id, message.message_id, { disable_notification: true });
@@ -163,19 +164,19 @@ export function createBot(token: string) {
         const builder = states.get(chatId);
 
         if (!builder) {
-            await ctx.reply('Invia il comando /hike per iniziare!');
+            await ctx.reply('Per utilizzare il bot, invia il comando /hike da una chat di gruppo.');
             return;
         }
 
         switch (builder.getStep()) {
             case 1:
                 builder.setTitle(text);
-                await ctx.reply('Inserisci una breve descrizione dell\'evento (oppure "-" per non inserire una descrizione):');
+                await ctx.reply(`Inserisci una breve descrizione dell\`evento (opzionale):`);
                 states.set(chatId, builder);
                 break;
             case 2:
                 builder.setDescription(text);
-                await ctx.reply('Carica un\'immagine per descrivere al meglio l\'evento:');
+                await ctx.reply(`Carica un\'immagine per descrivere al meglio l\'evento (opzionale):`);;
                 states.set(chatId, builder);
                 break;
             case 3:
@@ -184,11 +185,17 @@ export function createBot(token: string) {
                     if (photo) {
                         builder.setPhotoId(photo[photo.length - 1].file_id);
                     }
-
                     await ctx.reply('Inserisci la data dell\'evento (es., 11/02/2024):');
                     states.set(chatId, builder);
+                    break;
                 } else {
-                    await ctx.reply('Per favore, invia un\'immagine.');
+                    if (text === '-') {
+                        builder.setPhotoId(null);
+                        await ctx.reply('Inserisci la data dell\'evento (es., 11/02/2024):');
+                        states.set(chatId, builder);
+                        break;
+                    }
+                    await ctx.reply('Per favore, invia un\'immagine oppure salta il passaggio inviando "-".');
                 }
                 break;
             case 4:
@@ -219,11 +226,11 @@ export function createBot(token: string) {
             case 9:
                 builder.setTotalDistance(text);
                 await ctx.reply('Inserisci l\'equipaggiamento necessario\n(es., Scarponi, Bastoncini):');
-                await ctx.reply('Puoi inserire l\'equipaggiamento di default inviando "-"');
+                await ctx.reply('_Saltando il passaggio, verrà inserito tutto l\'equipaggiamento standard necessario._', { parse_mode: 'Markdown' });
                 states.set(chatId, builder);
                 break;
             case 10:
-                builder.setEquipment(text.split(','));
+                builder.setEquipment(text);
                 await ctx.reply('Inserisci l\'URL dell\'itinerario:');
                 states.set(chatId, builder);
                 break;
@@ -234,7 +241,7 @@ export function createBot(token: string) {
                 const script = builder.formatEvent();
                 if (photoId) {
                     await ctx.replyWithPhoto(photoId, {
-                        caption: script, parse_mode: 'Markdown', reply_markup: {
+                        caption: script, parse_mode: 'MarkdownV2', reply_markup: {
                             inline_keyboard: [
                                 [
                                     {
@@ -251,7 +258,7 @@ export function createBot(token: string) {
                     });
                 } else {
                     await ctx.reply(script, {
-                        parse_mode: 'Markdown', link_preview_options: { is_disabled: true }, reply_markup: {
+                        parse_mode: 'MarkdownV2', link_preview_options: { is_disabled: true }, reply_markup: {
                             inline_keyboard: [
                                 [
                                     {

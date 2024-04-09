@@ -1,8 +1,12 @@
 import { Bot as TelegramBot, Context } from "grammy";
 import { EventBuilder } from "./models/event-builder.js";
 
-const states = new Map<number, EventBuilder>();
+const states = new Map<string, EventBuilder>();
 const groups = new Map();
+
+function getSessionKey(userId: number, chatId: number) {
+    return `${userId}:${chatId}`;
+}
 
 export function createBot(token: string) {
     const bot = new TelegramBot(token);
@@ -10,12 +14,12 @@ export function createBot(token: string) {
     bot.command('hike', async (ctx) => {
         if (ctx.chat.type === 'group') {
             if (await isAdmin(ctx)) {
-                const adminId = ctx.from?.id;
+                const userId = ctx.from?.id;
                 const chatId = ctx.chat.id;
 
-                if (!adminId) return;
+                if (!userId) return;
 
-                groups.set(adminId, chatId);
+                groups.set(userId, chatId);
 
                 const message = await ctx.reply('Benvenuto nel bot di escursionismo di @relaps_hiking!', {
                     reply_markup: {
@@ -57,17 +61,18 @@ export function createBot(token: string) {
 
     bot.command('start', async (ctx) => {
         if (ctx.chat.type === 'private') {
-            const adminId = ctx.from?.id;
+            const userId = ctx.from?.id;
             const chatId = ctx.chat.id;
 
-            if (!adminId) return;
+            if (!userId) return;
 
-            if (!groups.has(adminId)) {
+            if (!groups.has(userId)) {
                 await ctx.reply('Per utilizzare il bot, invia il comando /start da una chat di gruppo.');
                 return;
             }
 
-            states.set(chatId, new EventBuilder());
+            const session = getSessionKey(userId, chatId);
+            states.set(session, new EventBuilder());
 
             await ctx.reply('Ti darò una mano a creare il tuo evento di escursionismo.');
             await ctx.reply(`_Puoi saltare i passaggi opzionali inviando "-" in chat!_`, { parse_mode: 'Markdown' });
@@ -84,18 +89,24 @@ export function createBot(token: string) {
     }
 
     bot.callbackQuery('publish', async (ctx) => {
-        const adminId = ctx.from?.id;
+        const userId = ctx.callbackQuery.from.id;
 
-        if (!adminId) return;
-        if (!groups.has(adminId)) {
+        if (!userId) return;
+        if (!groups.has(userId)) {
             await ctx.reply('Per utilizzare il bot, invia il comando /hike da una chat di gruppo.');
             return;
         }
+        
+        if (!ctx.callbackQuery.message?.chat.id) {
+            return;
+        }
 
-        const chatId = groups.get(adminId);
-        const builder = states.get(ctx.callbackQuery.from.id);
+        const session = getSessionKey(userId, ctx.callbackQuery.message?.chat.id);
 
-        if (!builder) {
+        const chatId = groups.get(userId);
+        const builder = states.get(session);
+
+        if (!builder || !chatId) {
             await ctx.reply('Per favore, inizia il processo di creazione di un nuovo evento inviando il comando /start da una chat di gruppo.');
             return;
         }
@@ -141,8 +152,6 @@ export function createBot(token: string) {
     });
 
     bot.callbackQuery('cancel', async (ctx) => {
-        states.delete(ctx.callbackQuery.from.id);
-
         await ctx.reply('L\'evento è stato annullato.');
         await ctx.answerCallbackQuery({
             url: 'https://t.me/relaps_bot?start=start'
@@ -159,9 +168,12 @@ export function createBot(token: string) {
         if (ctx.chat.type !== 'private') return;
 
         const chatId = ctx.chat.id;
+        const userId = ctx.from?.id;
+
         const text = ctx.message.text || '';
 
-        const builder = states.get(chatId);
+        const session = getSessionKey(userId, chatId);
+        const builder = states.get(session);
 
         if (!builder) {
             await ctx.reply('Per utilizzare il bot, invia il comando /hike da una chat di gruppo.');
@@ -172,12 +184,12 @@ export function createBot(token: string) {
             case 1:
                 builder.setTitle(text);
                 await ctx.reply(`Inserisci una breve descrizione dell\`evento (opzionale):`);
-                states.set(chatId, builder);
+                states.set(session, builder);
                 break;
             case 2:
                 builder.setDescription(text);
                 await ctx.reply(`Carica un\'immagine per descrivere al meglio l\'evento (opzionale):`);;
-                states.set(chatId, builder);
+                states.set(session, builder);
                 break;
             case 3:
                 if ('photo' in ctx.message) {
@@ -186,13 +198,13 @@ export function createBot(token: string) {
                         builder.setPhotoId(photo[photo.length - 1].file_id);
                     }
                     await ctx.reply('Inserisci la data dell\'evento (es., 11/02/2024):');
-                    states.set(chatId, builder);
+                    states.set(session, builder);
                     break;
                 } else {
                     if (text === '-') {
                         builder.setPhotoId(null);
                         await ctx.reply('Inserisci la data dell\'evento (es., 11/02/2024):');
-                        states.set(chatId, builder);
+                        states.set(session, builder);
                         break;
                     }
                     await ctx.reply('Per favore, invia un\'immagine oppure salta il passaggio inviando "-".');
@@ -201,38 +213,38 @@ export function createBot(token: string) {
             case 4:
                 builder.setDate(text);
                 await ctx.reply('Inserisci l\'orario di incontro (es., 10:00-10:15):');
-                states.set(chatId, builder);
+                states.set(session, builder);
                 break;
             case 5:
                 builder.setStartTime(text);
                 await ctx.reply('Inserisci l\'URL del luogo di incontro:');
-                states.set(chatId, builder);
+                states.set(session, builder);
                 break;
             case 6:
                 builder.setMeetingPoint(text);
                 await ctx.reply('Inserisci il livello di difficoltà dell\'evento (es., Intermedio):');
-                states.set(chatId, builder);
+                states.set(session, builder);
                 break;
             case 7:
                 builder.setDifficultyLevel(text);
                 await ctx.reply('Inserisci la durata dell\'evento (es., 1h 30m):');
-                states.set(chatId, builder);
+                states.set(session, builder);
                 break;
             case 8:
                 builder.setDuration(text);
                 await ctx.reply('Inserisci la distanza totale dell\'evento (es., 10km):');
-                states.set(chatId, builder);
+                states.set(session, builder);
                 break;
             case 9:
                 builder.setTotalDistance(text);
                 await ctx.reply('Inserisci l\'equipaggiamento necessario\n(es., Scarponi, Bastoncini):');
                 await ctx.reply('_Saltando il passaggio, verrà inserito tutto l\'equipaggiamento standard necessario._', { parse_mode: 'Markdown' });
-                states.set(chatId, builder);
+                states.set(session, builder);
                 break;
             case 10:
                 builder.setEquipment(text);
                 await ctx.reply('Inserisci l\'URL dell\'itinerario:');
-                states.set(chatId, builder);
+                states.set(session, builder);
                 break;
             case 11:
                 builder.setItinerary(text);

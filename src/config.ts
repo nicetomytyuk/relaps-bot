@@ -6,9 +6,6 @@ import { API_CONSTANTS } from "grammy";
 const createConfigFromEnvironment = (environment: NodeJS.ProcessEnv) => {
   const config = parseEnv(environment, {
     NODE_ENV: z.enum(["development", "production"]),
-    LOG_LEVEL: z
-      .enum(["trace", "debug", "info", "warn", "error", "fatal", "silent"])
-      .default("info"),
     BOT_MODE: {
       schema: z.enum(["polling", "webhook"]),
       defaults: {
@@ -23,7 +20,6 @@ const createConfigFromEnvironment = (environment: NodeJS.ProcessEnv) => {
     BOT_ALLOWED_UPDATES: z
       .array(z.enum(API_CONSTANTS.ALL_UPDATE_TYPES))
       .default([]),
-    BOT_ADMINS: z.array(z.number()).default([]),
   });
 
   if (config.BOT_MODE === "webhook") {

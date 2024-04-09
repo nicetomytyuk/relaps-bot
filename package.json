@@ -2,10 +2,14 @@
   "name": "relaps-bot",
   "version": "1.0.0",
   "description": "Telegram bot that will work as script builder for relaps",
-  "main": "api/index.ts",
+  "type": "module",
+  "imports": {
+    "#root/*": "./build/src/*"
+  },
   "scripts": {
-    "build": "npx tsc",
-    "dev": "nodemon ./src/index.ts",
+    "build": "tsc --noEmit false",
+    "dev": "tsc-watch --onSuccess \"tsx ./src/main.ts\"",
+    "start": "tsc && tsx ./src/main.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -26,8 +30,11 @@
     "axios": "^1.6.8",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
+    "fastify": "^4.26.2",
     "grammy": "^1.22.4",
-    "nodemon": "^3.1.0"
+    "node-graceful-shutdown": "^1.1.5",
+    "nodemon": "^3.1.0",
+    "znv": "^0.4.0"
   },
   "devDependencies": {
     "@types/express": "^4.17.21",

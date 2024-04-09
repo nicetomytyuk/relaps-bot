@@ -1,22 +1,13 @@
 
-import { webhookCallback } from "grammy";
-import bot from "../src/index"
+import { createBot } from "#root/bot/index.js";
+import { config } from "#root/config.js";
+import { createServer } from "#root/server/index.js";
+import { IncomingMessage, ServerResponse } from "node:http";
 
-function runMiddleware(req: Request, res: Response, fn: any) {
-    return new Promise((resolve, reject) => {
-        fn(req, res, (result: any) => {
-            if (result instanceof Error) {
-                return reject(result);
-            }
+const bot = createBot(config.BOT_TOKEN);
+const server = await createServer(bot);
 
-            return resolve(result);
-        });
-    });
-}
-
-async function handler(req: Request, res: Response) {
-    // Run the middleware
-    await runMiddleware(req, res, webhookCallback(bot));
-}
-
-export default handler;
+export default async (request: IncomingMessage, response: ServerResponse) => {
+  await server.ready();
+  server.server.emit("request", request, response);
+};

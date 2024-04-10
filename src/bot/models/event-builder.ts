@@ -19,61 +19,61 @@ export class EventBuilder {
 
     setTitle(title: string) {
         this.event.title = title;
-        this.step += 1;
+        this.nextStep();
     }
 
-    setDescription(description: string) {
+    setDescription(description: string | null) {
         this.event.description = description;
-        this.step += 1;
+        this.nextStep();
     }
 
     setPhotoId(photoId: string | null) {
         this.event.photoId = photoId;
-        this.step += 1;
+        this.nextStep();
     }
 
     setDate(date: string) {
         this.event.date = date;
-        this.step += 1;
+        this.nextStep();
     }
 
     setStartTime(startTime: string) {
         this.event.startTime = startTime;
-        this.step += 1;
+        this.nextStep();
     }
 
     setMeetingPoint(meetingPoint: string) {
         this.event.meetingPoint = meetingPoint;
-        this.step += 1;
+        this.nextStep();
     }
 
     setDifficultyLevel(difficultyLevel: string) {
         this.event.difficultyLevel = difficultyLevel;
-        this.step += 1;
+        this.nextStep();
     }
 
     setDuration(duration: string) {
         this.event.duration = duration;
-        this.step += 1;
+        this.nextStep();
     }
 
     setTotalDistance(totalDistance: string) {
         this.event.totalDistance = totalDistance;
-        this.step += 1;
+        this.nextStep();
     }
 
-    setEquipment(equipment: string) {
-        if (equipment === '-') {
+    setEquipment(equipment: string | null) {
+        if (!equipment) {
             this.event.equipment = [...defaultEquipment];
         } else {
             this.event.equipment = [...defaultEquipment, ...equipment.split(',')];
         }
-        this.step += 1;
+        this.nextStep();
     }
 
     setItinerary(itinerary: string) {
         this.event.itinerary = itinerary;
-        this.step += 1;
+        this.nextStep();
     }
 
     getFullTitle() {
@@ -88,10 +88,14 @@ export class EventBuilder {
         return this.step;
     }
 
+    nextStep() {
+        this.step += 1;
+    }
+
     formatEvent() {
         let script = `*${this.getFullTitle().replace(/[-_.!]/g, '\\$&')}*\n\n`
     
-        if (this.event.description !== '-') {
+        if (this.event.description !== null) {
             script += `_${this.event.description?.replace(/[-_.!]/g, '\\$&')}_\n\n`
         }
     

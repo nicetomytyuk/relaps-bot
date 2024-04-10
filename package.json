@@ -27,6 +27,8 @@
   },
   "homepage": "https://github.com/nicetomytyuk/relaps-bot#readme",
   "dependencies": {
+    "@grammyjs/auto-retry": "^1.1.1",
+    "@grammyjs/types": "^3.6.2",
     "axios": "^1.6.8",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",

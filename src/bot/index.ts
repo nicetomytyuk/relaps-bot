@@ -43,6 +43,8 @@ export function createBot(token: string) {
             return;
         }
 
+        ctx.session.builder = new EventBuilder();
+
         const chat = await bot.api.getChat(ctx.session.groupId);
         if (chat.type != "supergroup") {
             await ctx.reply(`Ti aiuterò a creare il tuo evento di escursionismo.`);

@@ -1,9 +1,9 @@
-import { EventBuilder } from "../models/event-builder.js";
+import { EventContext } from "../event-context.js";
 
-export async function titleInput(ctx: any, text: string | null): Promise<void> {
+export async function titleInput(ctx: EventContext, text: string | null): Promise<void> {
     if (!text) return;
 
-    const builder = ctx.session.builder as EventBuilder;
+    const builder = ctx.session.builder;
 
     builder.setTitle(text);
     await ctx.reply(`Inserisci una breve descrizione dell\`evento:`, {

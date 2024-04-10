@@ -4,10 +4,11 @@ export interface Event {
     photoId?: string | null;
     date?: string;
     startTime?: string;
-    meetingPoint?: string;
+    meetingPointUrl?: string;
     difficultyLevel?: string;
     duration?: string;
     totalDistance?: string;
     equipment?: string[];
-    itinerary?: string;
+    itineraryUrl?: string;
+    invitation?: string | null;
 }

@@ -1,10 +1,10 @@
-import { EventBuilder } from "../models/event-builder.js";
-import { dateInput, descriptionInput, difficultLevelInput, distanceInput, durationInput, equipmentInput, meetingPointInput, photoInput, startTimeInput, titleInput } from "../inputs/index.js";
+import { dateInput, descriptionInput, difficultLevelInput, distanceInput, durationInput, equipmentInput, inviteInput, meetingPointInput, photoInput, startTimeInput, titleInput } from "../inputs/index.js";
 import { itineraryInput } from "../inputs/itinerary.js";
+import { EventContext } from "../event-context.js";
 import { previewHandler } from "./index.js";
 
-export async function stepHandler(ctx: any, text: string | null): Promise<void> {
-    const builder = ctx.session.builder as EventBuilder;
+export async function stepHandler(ctx: EventContext, text: string | null): Promise<void> {
+    const builder = ctx.session.builder;
 
     switch (builder.getStep()) {
         case 1:
@@ -39,6 +39,9 @@ export async function stepHandler(ctx: any, text: string | null): Promise<void> 
             break;
         case 11:
             await itineraryInput(ctx, text);
+            break;
+        case 13:
+            await inviteInput(ctx, text);
             await previewHandler(ctx);
             break;
         default:

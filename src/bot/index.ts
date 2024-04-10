@@ -4,7 +4,7 @@ import { EventContext } from "./event-context.js";
 import { checkIfAdmin, checkIfGroup, checkIfPrivate, getSessionKey } from "./middlewares.js";
 
 import { autoRetry } from "@grammyjs/auto-retry";
-import { stepHandler } from "./handlers/index.js";
+import { previewHandler, publishHandler, stepHandler } from "./handlers/index.js";
 
 
 export function createBot(token: string) {
@@ -37,7 +37,7 @@ export function createBot(token: string) {
 
     bot.command('start', checkIfPrivate, async (ctx) => {
         ctx.session.groupId = parseInt(ctx.match) || ctx.session.groupId;
-        
+
         if (!ctx.session.groupId) {
             await ctx.reply('Per utilizzare il bot, invia il comando /hike da una chat di gruppo.');
             return;
@@ -55,83 +55,55 @@ export function createBot(token: string) {
         await ctx.reply('Inserisci il nome dell\'evento (es., Giro ad anello Monte Rosa):')
     });
 
-    bot.callbackQuery('publish', async (ctx) => {
-        const chatId = ctx.session.groupId;
-        const builder = ctx.session.builder;
-        const script = builder.formatEvent();
-        const photoId = builder.getPhotoId();
+    bot.on('callback_query:data', async (ctx) => {
+        const [prefix, action] = ctx.callbackQuery.data.split(':');
 
-        if (photoId) {
-            const message = await ctx.api.sendPhoto(chatId, photoId, { caption: script, parse_mode: 'MarkdownV2' });
-
-            try {
-                await ctx.api.pinChatMessage(message.chat.id, message.message_id, { disable_notification: true });
-            } catch (e) {
-                await ctx.reply('Impossibile pinnare il messaggio, il bot deve essere un amministratore!');
+        if (prefix === 'preview') {
+            if (action === 'group') {
+                // The stepper will be set to 12 after the user completes the full-fillment of the event
+                // if the invitation is a group the stepper must be set to 13 to accept the group link in input
+                // thats why of .nextStep() called here
+                ctx.session.builder.nextStep();
+                await ctx.reply('Inserisci il link del gruppo Telegram o WhatsApp:');
+            } else {
+                ctx.session.builder.setInvite(action as string | null);
+                await previewHandler(ctx);
             }
-        } else {
-            const message = await ctx.api.sendMessage(chatId, script, { parse_mode: 'MarkdownV2', link_preview_options: { is_disabled: true } });
-
-            try {
-                await ctx.api.pinChatMessage(message.chat.id, message.message_id, { disable_notification: true });
-            } catch (e) {
-                await ctx.reply('Impossibile pinnare il messaggio, il bot deve essere un amministratore!');
-            }
+            await ctx.editMessageReplyMarkup();
         }
 
-        const poll = await ctx.api.sendPoll(
-            chatId,
-            builder.getFullTitle(),
-            ['Ci sono 🧗‍♂️', 'Non ci sono 😥', 'Ho bisogno di un passaggio 🛒'],
-            {
-                is_anonymous: false,
-                allows_multiple_answers: true
-            }
-        )
-
-        try {
-            await ctx.api.pinChatMessage(poll.chat.id, poll.message_id, { disable_notification: true });
-        } catch (e) {
-            await ctx.reply('Impossibile pinnare il messaggio, il bot deve essere un amministratore!');
+        if (prefix === 'skip') {
+            await stepHandler(ctx, null);
+            await ctx.editMessageReplyMarkup();
         }
 
-        const chat = await bot.api.getChat(ctx.session.groupId);
-        if (chat.type != "supergroup") {
-            await ctx.reply(`L\`evento è stato pubblicato correttamente!`);
-        } else {
-            await ctx.reply(`L\`evento è stato pubblicato correttamente in @${chat.username}!`);
+        if (prefix === 'cancel') {
+            await ctx.reply('L\'evento è stato annullato.');
+            ctx.session = { builder: new EventBuilder(), groupId: ctx.session.groupId };
+            await ctx.reply('Inizia di nuovo la creazione dell\'evento inviando /start.');
+            await ctx.editMessageReplyMarkup();
+        }
+
+        if (prefix === 'publish') {
+            await publishHandler(ctx);
+            await ctx.editMessageReplyMarkup();
+
+            const chat = await bot.api.getChat(ctx.session.groupId);
+            if (chat.type != "supergroup") {
+                await ctx.reply(`L\`evento è stato pubblicato correttamente!`);
+            } else {
+                await ctx.reply(`L\`evento è stato pubblicato correttamente in @${chat.username}!`);
+            }
         }
 
         await ctx.answerCallbackQuery();
-        await ctx.editMessageReplyMarkup({});
-    });
-
-    bot.callbackQuery('cancel', async (ctx) => {
-        await ctx.reply('L\'evento è stato annullato.');
-        ctx.session = { builder: new EventBuilder(), groupId: ctx.session.groupId };
-        await ctx.reply('Inizia di nuovo la creazione dell\'evento inviando /start.');
-
-        await ctx.answerCallbackQuery();
-        await ctx.editMessageReplyMarkup({});
-    });
-
-    bot.callbackQuery('skip', async (ctx) => {
-        const builder = ctx.session.builder;
-        if (!builder) {
-            await ctx.reply('Non hai ancora creato l\'evento.');
-            return;
-        }
-        await stepHandler(ctx, null);
-        
-        await ctx.answerCallbackQuery();
-        await ctx.editMessageReplyMarkup({});
     });
 
     bot.on('message', async (ctx) => {
         if (ctx.update.message.chat.type != 'private') return;
 
         const text = ctx.message.text || '';
-        await stepHandler(ctx, text); 
+        await stepHandler(ctx, text);
     });
 
     return bot;

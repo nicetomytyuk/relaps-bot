@@ -1,13 +1,13 @@
-import { EventBuilder } from "../models/event-builder.js";
+import { EventContext } from "../event-context.js";
 
-export async function photoInput(ctx: any, text: string | null): Promise<void> {
-    const builder = ctx.session.builder as EventBuilder;
+export async function photoInput(ctx: EventContext, text: string | null): Promise<void> {
+    const builder = ctx.session.builder;
 
     if (text === null) {
         builder.setPhotoId(null);
         await ctx.reply('Inserisci la data dell\'evento (es., 11/02/2024):');
         return;
-    }else if ('photo' in ctx.message) {
+    }else if (ctx.message && 'photo' in ctx.message) {
         const photo = ctx.message.photo;
         if (photo) {
             builder.setPhotoId(photo[photo.length - 1].file_id);

@@ -1,7 +1,7 @@
-import { EventBuilder } from "../models/event-builder.js";
+import { EventContext } from "../event-context.js";
 
-export async function previewHandler(ctx: any): Promise<void> {
-    const builder = ctx.session.builder as EventBuilder;
+export async function previewHandler(ctx: EventContext): Promise<void> {
+    const builder = ctx.session.builder;
 
     const photoId = builder.getPhotoId();
     const script = builder.formatEvent();

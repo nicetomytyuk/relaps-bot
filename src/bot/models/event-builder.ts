@@ -43,7 +43,7 @@ export class EventBuilder {
     }
 
     setMeetingPoint(meetingPoint: string) {
-        this.event.meetingPoint = meetingPoint;
+        this.event.meetingPointUrl = meetingPoint;
         this.nextStep();
     }
 
@@ -72,8 +72,16 @@ export class EventBuilder {
     }
 
     setItinerary(itinerary: string) {
-        this.event.itinerary = itinerary;
+        this.event.itineraryUrl = itinerary;
         this.nextStep();
+    }
+    
+    setInvite(invitation: string | null) {
+        this.event.invitation = invitation;
+    }
+
+    getInvite() {
+        return this.event.invitation;
     }
 
     getFullTitle() {
@@ -102,7 +110,7 @@ export class EventBuilder {
         script += `📆 Data: *${this.event.date?.replace(/[-_.!]/g, '\\$&')}*\n`
         script += `💨 Orario di Incontro e Partenza: *${this.event.startTime?.replace(/[-_.!]/g, '\\$&')}*\n\n`
     
-        script += `📍 [Punto di Incontro](${this.event.meetingPoint})\n\n`
+        script += `📍 [Punto di Incontro](${this.event.meetingPointUrl})\n\n`
         script += `🔰 Livello di Difficoltà: *${this.event.difficultyLevel}*\n`
 
         if (this.event.difficultyLevel?.toLowerCase() === 'difficile') {
@@ -122,7 +130,7 @@ export class EventBuilder {
         
         script += `\n`
     
-        script += `🧗‍♂️ [Itinerario](${this.event.itinerary})\n\n`
+        script += `🧗‍♂️ [Itinerario](${this.event.itineraryUrl})\n\n`
     
         script += "__*Consigli e Avvertenze:*__\n\n"
         

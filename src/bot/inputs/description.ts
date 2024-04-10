@@ -1,7 +1,7 @@
-import { EventBuilder } from "../models/event-builder.js";
+import { EventContext } from "../event-context.js";
 
-export async function descriptionInput(ctx: any, text: string | null): Promise<void> {
-    const builder = ctx.session.builder as EventBuilder;
+export async function descriptionInput(ctx: EventContext, text: string | null): Promise<void> {
+    const builder = ctx.session.builder;
 
     builder.setDescription(text);
     await ctx.reply(`Carica un\'immagine per descrivere al meglio l\'evento:`, {

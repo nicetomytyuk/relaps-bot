@@ -10,9 +10,9 @@ export async function itineraryInput(ctx: EventContext, text: string | null): Pr
         reply_markup: {
             inline_keyboard: [
                 [
-                    { text: 'Sondaggio', callback_data: 'preview:survey' },
+                    { text: 'Sondaggio', callback_data: 'preview:poll' },
                     { text: 'Gruppo', callback_data: 'preview:group' },
-                    { text: 'Nessuno', callback_data: 'preview:invitation' }
+                    { text: 'Nessuno', callback_data: 'preview' }
                 ]
             ]
         }

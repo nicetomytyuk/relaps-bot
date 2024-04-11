@@ -12,7 +12,7 @@ export async function itineraryInput(ctx: EventContext, text: string | null): Pr
                 [
                     { text: 'Sondaggio', callback_data: 'preview:poll' },
                     { text: 'Gruppo', callback_data: 'preview:group' },
-                    { text: 'Nessuno', callback_data: 'preview' }
+                    { text: 'Nessuno', callback_data: 'preview:none' }
                 ]
             ]
         }

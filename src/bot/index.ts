@@ -82,11 +82,11 @@ export function createBot(token: string) {
             ctx.session = { builder: new EventBuilder(), groupId: ctx.session.groupId };
             await ctx.reply('Inizia di nuovo la creazione dell\'evento inviando /start.');
             await ctx.editMessageReplyMarkup();
+            await ctx.deleteMessage();
         }
 
         if (prefix === 'publish') {
             await publishHandler(ctx);
-            await ctx.editMessageReplyMarkup();
 
             const chat = await bot.api.getChat(ctx.session.groupId);
             if (chat.type != "supergroup") {
@@ -94,6 +94,9 @@ export function createBot(token: string) {
             } else {
                 await ctx.reply(`L\`evento è stato pubblicato correttamente in @${chat.username}!`);
             }
+            
+            await ctx.editMessageReplyMarkup();
+            await ctx.deleteMessage();
         }
 
         await ctx.answerCallbackQuery();

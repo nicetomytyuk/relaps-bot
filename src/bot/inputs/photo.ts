@@ -16,5 +16,11 @@ export async function photoInput(ctx: EventContext, text: string | null): Promis
         return;
     }
     
-    await ctx.reply('Per favore, invia un\'immagine oppure salta il passaggio.');
+    await ctx.reply('Per favore, invia un\'immagine oppure salta il passaggio.', {
+        reply_markup: {
+            inline_keyboard: [
+                [{ text: 'Salta', callback_data: 'skip' }]
+            ]
+        }
+    });
 }

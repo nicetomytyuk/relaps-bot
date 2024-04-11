@@ -78,6 +78,7 @@ export class EventBuilder {
     
     setInvite(invitation: string | null) {
         this.event.invitation = invitation;
+        this.nextStep();
     }
 
     getInvite() {
@@ -101,31 +102,41 @@ export class EventBuilder {
     }
 
     formatEvent() {
-        let script = `*${this.getFullTitle().replace(/[-_.!]/g, '\\$&')}*\n\n`
+        const title = this.getFullTitle().replace(/[-_.!]/g, '\\$&');
+        let script = `*${title}*\n\n`
     
-        if (this.event.description !== null) {
-            script += `_${this.event.description?.replace(/[-_.!]/g, '\\$&')}_\n\n`
+        const description = this.event.description?.replace(/[-_.!]/g, '\\$&');
+        if (description !== undefined && description !== null) {
+            script += `_${description}_\n\n`
         }
     
-        script += `📆 Data: *${this.event.date?.replace(/[-_.!]/g, '\\$&')}*\n`
-        script += `💨 Orario di Incontro e Partenza: *${this.event.startTime?.replace(/[-_.!]/g, '\\$&')}*\n\n`
+        const date = this.event.date?.replace(/[-_.!]/g, '\\$&');
+        script += `📆 Data: *${date}*\n`
+
+        const startTime = this.event.startTime?.replace(/[-_.!]/g, '\\$&');
+        script += `💨 Orario di Incontro e Partenza: *${startTime}*\n\n`
     
         script += `📍 [Punto di Incontro](${this.event.meetingPointUrl})\n\n`
-        script += `🔰 Livello di Difficoltà: *${this.event.difficultyLevel}*\n`
 
-        if (this.event.difficultyLevel?.toLowerCase() === 'difficile') {
+        const difficultyLevel = this.event.difficultyLevel?.replace(/[-_.!]/g, '\\$&');
+        script += `🔰 Livello di Difficoltà: *${difficultyLevel}*\n`
+
+        if (difficultyLevel === 'difficile') {
             script += "‼ *Questo percorso non è adatto ai principianti\\.*\n";
         }
 
         script += "\n"
     
-        script += `⏳ Durata: *${this.event.duration}*\n`
-        script += `🗺 Distanza totale: *${this.event.totalDistance}*\n\n`
+        const duration = this.event.duration?.replace(/[-_.!]/g, '\\$&');
+        script += `⏳ Durata: *${duration}*\n`
+
+        const totalDistance = this.event.totalDistance?.replace(/[-_.!]/g, '\\$&');
+        script += `🗺 Distanza totale: *${totalDistance}*\n\n`
     
         script += `🧥 Attrezzatura consigliata:\n\n`
     
         for (let equipment of this.event.equipment || []) {
-            script += `• ${equipment}\n`
+            script += `• ${equipment.trim()}\n`
         }
         
         script += `\n`

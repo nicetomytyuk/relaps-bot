@@ -12,21 +12,14 @@ export async function previewHandler(ctx: EventContext): Promise<void> {
     const keyboard = new InlineKeyboard().text('Pubblica', 'publish').text('Annulla', 'cancel');
 
     if (photoId) {
-        if (invite !== null) {
-            await ctx.replyWithPhoto(photoId, { caption: script, parse_mode: 'MarkdownV2' });
-        } else {
-            await ctx.replyWithPhoto(photoId, { caption: script, parse_mode: 'MarkdownV2', reply_markup: keyboard });
-        }
+        await ctx.replyWithPhoto(photoId, { caption: script, parse_mode: 'MarkdownV2' });
     } else {
-        if (invite !== null) {
-            await ctx.reply(script, { parse_mode: 'MarkdownV2' });
-        } else {
-            await ctx.reply(script, { parse_mode: 'MarkdownV2', reply_markup: keyboard });
-        }
+        await ctx.reply(script, { parse_mode: 'MarkdownV2', link_preview_options: { is_disabled: true } });
     }
 
-    if (invite !== 'poll' && invite !== null) {
-        await ctx.reply(`*GRUPPO DELL'ESCURSIONE ${builder.getFullTitle()}:*\n\n${invite}`, { parse_mode: 'Markdown', reply_markup: keyboard });
+    if (invite !== null && invite !== 'none' && invite !== 'poll') {
+        const title = builder.getFullTitle().replace(/[-_.!]/g, '\\$&');
+        await ctx.reply(`*[GRUPPO DELL'ESCURSIONE ${title}](${invite})*`, { parse_mode: 'MarkdownV2' });
     }
 
     if (invite === 'poll') {
@@ -38,7 +31,7 @@ export async function previewHandler(ctx: EventContext): Promise<void> {
                 allows_multiple_answers: true
             }
         )
-
-        await ctx.reply('Ecco un\'anteprima dell\'evento, vuoi pubblicarlo?', { parse_mode: 'Markdown', reply_markup: keyboard });
     }
+
+    await ctx.reply('Ecco un\'anteprima dell\'evento, vuoi pubblicarlo?', { parse_mode: 'Markdown', reply_markup: keyboard });
 }

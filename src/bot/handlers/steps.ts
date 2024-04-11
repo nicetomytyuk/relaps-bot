@@ -45,7 +45,6 @@ export async function stepHandler(ctx: EventContext, text: string | null): Promi
             await previewHandler(ctx);
             break;
         default:
-            await ctx.reply('Comando non riconosciuto. Invia il comando /start per iniziare!');
             break;
     }
 }

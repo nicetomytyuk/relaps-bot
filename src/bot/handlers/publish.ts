@@ -44,10 +44,9 @@ export async function publishHandler(ctx: EventContext): Promise<void> {
         }
     }
 
-    if (invite !== 'poll' && invite !== null) {
-        const message = await ctx.api.sendMessage(chatId,
-            `*GRUPPO DELL'ESCURSIONE ${builder.getFullTitle()}:*\n\n${invite}`,
-            { parse_mode: 'Markdown' });
+    if (invite !== null && invite !== 'none' && invite !== 'poll') {
+        const title = builder.getFullTitle().replace(/[-_.!]/g, '\\$&');
+        const message = await ctx.api.sendMessage(chatId, `*[GRUPPO DELL'ESCURSIONE ${title}](${invite})*`, { parse_mode: 'MarkdownV2' });
         try {
             await ctx.api.pinChatMessage(message.chat.id, message.message_id, { disable_notification: true });
         } catch (e) {

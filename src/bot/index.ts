@@ -9,7 +9,6 @@ import {
 } from "@grammyjs/conversations";
 
 import { createEvent } from "./conversations/event.js";
-import { EventBuilder } from "./models/event-builder.js";
 
 const sleep = async (miliseconds: number) => new Promise(resolve => setTimeout(resolve, miliseconds))
 
@@ -17,7 +16,7 @@ export function createBot(token: string) {
     const bot = new TelegramBot<EventContext>(token);
 
     // Set the session middleware and initialize session data
-    bot.use(session({ getSessionKey, initial: () => ({ builder: new EventBuilder() }) }));
+    bot.use(session({ getSessionKey, initial: () => ({ groupId: 0 }) }));
 
     // Install the conversations plugin.
     bot.use(conversations());

@@ -1,8 +1,5 @@
-import { Conversation } from "@grammyjs/conversations";
 import { EventContext } from "../event-context.js";
 import { EventBuilder } from "../models/event-builder.js";
-
-type EventConversation = Conversation<EventContext>;
 
 export async function publish(builder: EventBuilder, ctx: EventContext): Promise<void> {
     const chatId = ctx.session.groupId;

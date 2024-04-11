@@ -54,6 +54,7 @@ export function createBot(token: string) {
             await ctx.reply(`Stai per creare un evento per il gruppo @${chat.username}.`);
         }
 
+        await ctx.conversation.exit();
         await ctx.conversation.enter("createEvent");
     });
 

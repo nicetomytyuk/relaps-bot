@@ -61,7 +61,6 @@ export async function createEvent(conversation: EventConversation, ctx: EventCon
     await ctx.reply('Inserisci l\'URL del luogo di incontro:');
     builder.setMeetingPoint(await conversation.form.text());
 
-    
     await ctx.reply('Inserisci il livello di difficoltà dell\'evento (es., Intermedio):');
     builder.setDifficulty(await conversation.form.text());
     
@@ -86,10 +85,9 @@ export async function createEvent(conversation: EventConversation, ctx: EventCon
         }
         await ctx.reply('Per favore, inserisci un valore valido per l\'equipaggiamento oppure salta il passaggio.', { reply_markup: skip });
     } while (!ctx.msg?.text || ctx.callbackQuery?.data === 'skip')
-
         
     await ctx.reply('Inserisci l\'URL dell\'itinerario:');
-    builder.setInvite(await conversation.form.text());
+    builder.setItinerary(await conversation.form.text());
 
     const keyboard = new InlineKeyboard()
         .text("Sondaggio", "preview:poll")

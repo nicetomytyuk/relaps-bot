@@ -9,57 +9,46 @@ const defaultEquipment = [
 ];
 
 export class EventBuilder {
-    private step: number;
     private event: Event;
 
     constructor() {
-        this.step = 1;
         this.event = {};
     }
 
     setTitle(title: string) {
         this.event.title = title;
-        this.nextStep();
     }
 
     setDescription(description: string | null) {
         this.event.description = description;
-        this.nextStep();
     }
 
     setPhotoId(photoId: string | null) {
         this.event.photoId = photoId;
-        this.nextStep();
     }
 
     setDate(date: string) {
         this.event.date = date;
-        this.nextStep();
     }
 
     setStartTime(startTime: string) {
         this.event.startTime = startTime;
-        this.nextStep();
     }
 
     setMeetingPoint(meetingPoint: string) {
         this.event.meetingPointUrl = meetingPoint;
-        this.nextStep();
     }
 
-    setDifficultyLevel(difficultyLevel: string) {
+    setDifficulty(difficultyLevel: string) {
         this.event.difficultyLevel = difficultyLevel;
-        this.nextStep();
     }
 
     setDuration(duration: string) {
         this.event.duration = duration;
-        this.nextStep();
     }
 
-    setTotalDistance(totalDistance: string) {
+    setDistance(totalDistance: string) {
         this.event.totalDistance = totalDistance;
-        this.nextStep();
     }
 
     setEquipment(equipment: string | null) {
@@ -68,17 +57,14 @@ export class EventBuilder {
         } else {
             this.event.equipment = [...defaultEquipment, ...equipment.split(',')];
         }
-        this.nextStep();
     }
 
     setItinerary(itinerary: string) {
         this.event.itineraryUrl = itinerary;
-        this.nextStep();
     }
     
     setInvite(invitation: string | null) {
         this.event.invitation = invitation;
-        this.nextStep();
     }
 
     getInvite() {
@@ -93,15 +79,7 @@ export class EventBuilder {
         return this.event.photoId;
     }
 
-    getStep() {
-        return this.step;
-    }
-
-    nextStep() {
-        this.step += 1;
-    }
-
-    formatEvent() {
+    getEvent() {
         const title = this.getFullTitle().replace(/[-_.!]/g, '\\$&');
         let script = `*${title}*\n\n`
     

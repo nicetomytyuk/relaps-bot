@@ -1,10 +1,13 @@
+import { Conversation } from "@grammyjs/conversations";
 import { EventContext } from "../event-context.js";
+import { EventBuilder } from "../models/event-builder.js";
 
-export async function publishHandler(ctx: EventContext): Promise<void> {
-    const builder = ctx.session.builder;
+type EventConversation = Conversation<EventContext>;
+
+export async function publish(builder: EventBuilder, ctx: EventContext): Promise<void> {
     const chatId = ctx.session.groupId;
 
-    const script = builder.formatEvent();
+    const script = builder.getEvent();
     const photoId = builder.getPhotoId();
 
     if (photoId) {
@@ -25,7 +28,7 @@ export async function publishHandler(ctx: EventContext): Promise<void> {
         }
     }
 
-    const invite = ctx.session.builder.getInvite();
+    const invite = builder.getInvite();
 
     if (invite === 'poll') {
         const poll = await ctx.api.sendPoll(
@@ -53,5 +56,7 @@ export async function publishHandler(ctx: EventContext): Promise<void> {
             console.log(e);
         }
     }
+
+    return;
 
 }

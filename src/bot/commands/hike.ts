@@ -13,6 +13,11 @@ export async function onHike(ctx: CommandContext<EventContext>) {
     });
 
     await sleep(5000);
-    await ctx.deleteMessage();
-    await ctx.api.deleteMessage(ctx.chat.id, message.message_id);
+
+    try {
+        await ctx.deleteMessage();
+        await ctx.api.deleteMessage(ctx.chat.id, message.message_id);
+    } catch (e) {
+        console.log(e);
+    }
 }

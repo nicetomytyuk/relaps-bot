@@ -18,11 +18,17 @@ export function createBot(token: string) {
     // Set the session middleware and initialize session data
     bot.use(session({ getSessionKey, initial: () => ({ groupId: 0 }), storage: freeStorage<SessionData>(bot.token) }));
 
+    // Set the auto-retry middleware
+    bot.api.config.use(autoRetry());
+
+    // Create the callback to private chat with groupId payload
+    bot.chatType(["group", "supergroup"]).command('hike', checkIfGroup, checkIfAdmin, onHike);
+
     // Install the conversations plugin.
     bot.chatType("private").use(conversations());
-    bot.chatType("private").use(createConversation(createEvent));
 
-    bot.hears(/^\/start(?:@relaps_bot)?\s*(\d*)$/, async (ctx, next) => {
+    // Exit any existing conversation
+    bot.chatType("private").command('start', async (ctx, next) => {
         const isConversationActive = await ctx.conversation.active();
         if (isConversationActive) {
             await ctx.conversation.exit();
@@ -31,12 +37,10 @@ export function createBot(token: string) {
         await next();
     });
 
-    /// Set the auto-retry middleware
-    bot.api.config.use(autoRetry());
+    bot.chatType("private").use(createConversation(createEvent));
 
-    bot.command('hike', checkIfGroup, checkIfAdmin, onHike);
-
-    bot.command('start', checkIfPrivate, onStart);
+    // Start the conversation for event creation
+    bot.chatType("private").command('start', checkIfPrivate, onStart);
 
     return bot;
 }

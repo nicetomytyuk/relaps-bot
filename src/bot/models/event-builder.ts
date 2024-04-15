@@ -99,7 +99,7 @@ export class EventBuilder {
         const difficultyLevel = this.event.difficultyLevel?.replace(/[-_.!]/g, '\\$&');
         script += `🔰 Livello di Difficoltà: *${difficultyLevel}*\n`
 
-        if (difficultyLevel === 'difficile') {
+        if (difficultyLevel?.toLowerCase() === 'difficile') {
             script += "‼ *Questo percorso non è adatto ai principianti\\.*\n";
         }
 
@@ -125,7 +125,7 @@ export class EventBuilder {
         
         script += "❗ *Ricordo inoltre che non siamo guide alpine e per tanto ognuno è responsabile della propria incolumità\\!*\n\n"
 
-        script += "‼ *È dovere dell'interessato/a valutare, secondo il suo livello di preparazione, se è in grado di affrontare il percorso o meno\\.*\n\n"
+        script += "‼️ *È dovere dell'interessato/a valutare, secondo il suo livello di preparazione, se è in grado di affrontare il percorso o meno\\.*\n\n"
         
         script += "⚠️ __*Attenzione: Questa escursione è riservata esclusivamente a partecipanti maggiorenni\\.*__\n\n";
 

@@ -2,9 +2,9 @@ import { Context, NextFunction } from "grammy";
 
 export function getSessionKey(ctx: Context) {
     return ctx.from?.id.toString();
-  }
+}
 
-  export async function checkIfAdmin(ctx: Context, next: NextFunction) {
+export async function checkIfAdmin(ctx: Context, next: NextFunction) {
     const userId = ctx.update.message?.from.id || null;
     
     if (!userId) {
@@ -19,6 +19,7 @@ export function getSessionKey(ctx: Context) {
 	}
 	await next();
 }
+
 
 export async function checkIfGroup(ctx: Context, next: NextFunction) {
     if (!ctx.msg) {

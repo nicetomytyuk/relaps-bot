@@ -1,6 +1,8 @@
 import { Context, SessionFlavor } from "grammy";
 import { ConversationFlavor } from "@grammyjs/conversations";
 
-export type EventContext = Context & SessionFlavor<{
+export interface SessionData {
     groupId: number;
-}> & ConversationFlavor
+}
+
+export type EventContext = Context & SessionFlavor<SessionData> & ConversationFlavor

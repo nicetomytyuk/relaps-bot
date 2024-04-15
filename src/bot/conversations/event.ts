@@ -74,6 +74,8 @@ export async function createEvent(conversation: EventConversation, ctx: EventCon
     do {
         ctx = await conversation.waitFor([":text", "callback_query:data"]);
         if (ctx.callbackQuery?.data === 'skip') {
+            builder.setEquipment(null);
+            
             await ctx.editMessageReplyMarkup();
             await ctx.answerCallbackQuery();
             break;

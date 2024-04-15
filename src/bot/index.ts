@@ -20,8 +20,8 @@ export function createBot(token: string) {
     bot.use(session({ getSessionKey, initial: () => ({ groupId: 0 }), storage: freeStorage<SessionData>(bot.token) }));
 
     // Install the conversations plugin.
-    bot.use(conversations());
-    bot.use(createConversation(createEvent));
+    bot.chatType("private").use(conversations());
+    bot.chatType("private").use(createConversation(createEvent));
 
     /// Set the auto-retry middleware
     bot.api.config.use(autoRetry());

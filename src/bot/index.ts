@@ -10,8 +10,7 @@ import {
 
 import { createEvent } from "./conversations/event.js";
 import { freeStorage } from "@grammyjs/storage-free";
-
-const sleep = async (miliseconds: number) => new Promise(resolve => setTimeout(resolve, miliseconds))
+import { onHike, onStart } from "./commands/index.js";
 
 export function createBot(token: string) {
     const bot = new TelegramBot<EventContext>(token);
@@ -23,41 +22,21 @@ export function createBot(token: string) {
     bot.chatType("private").use(conversations());
     bot.chatType("private").use(createConversation(createEvent));
 
+    bot.hears(/^\/start(?:@relaps_bot)?\s*(\d*)$/, async (ctx, next) => {
+        const isConversationActive = await ctx.conversation.active();
+        if (isConversationActive) {
+            await ctx.conversation.exit();
+        }
+
+        await next();
+    });
+
     /// Set the auto-retry middleware
     bot.api.config.use(autoRetry());
 
-    bot.command('hike', checkIfGroup, checkIfAdmin, async (ctx) => {
-        const message = await ctx.reply('Benvenuto nel bot di escursionismo di @relaps_hiking!', {
-            reply_markup: {
-                inline_keyboard: [
-                    [{ text: 'Crea il tuo evento!', url: `https://t.me/relaps_bot?start=${ctx.chat.id}` }]
-                ]
-            }
-        });
+    bot.command('hike', checkIfGroup, checkIfAdmin, onHike);
 
-        await sleep(5000);
-        await ctx.deleteMessage();
-        await ctx.api.deleteMessage(ctx.chat.id, message.message_id);
-    });
-
-    bot.command('start', checkIfPrivate, async (ctx) => {
-        ctx.session.groupId = parseInt(ctx.match) || ctx.session.groupId;
-
-        if (!ctx.session.groupId) {
-            await ctx.reply('Per utilizzare il bot, invia il comando /hike da una chat di gruppo.');
-            return;
-        }
-
-        const chat = await bot.api.getChat(ctx.session.groupId);
-        if (chat.type != "supergroup") {
-            await ctx.reply(`Ti aiuterò a creare il tuo evento di escursionismo.`);
-        } else {
-            await ctx.reply(`Stai per creare un evento per il gruppo @${chat.username}.`);
-        }
-
-        await ctx.conversation.exit();
-        await ctx.conversation.enter("createEvent");
-    });
+    bot.command('start', checkIfPrivate, onStart);
 
     return bot;
 }

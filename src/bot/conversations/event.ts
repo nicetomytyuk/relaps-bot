@@ -35,7 +35,7 @@ export async function createEvent(conversation: EventConversation, ctx: EventCon
 
     await ctx.reply(`Carica un\'immagine per descrivere al meglio l\'evento:`, { reply_markup: skip });
     do {
-        ctx = await conversation.wait();
+        ctx = await conversation.waitFor([":photo", "callback_query:data"]);
         
         if (ctx.callbackQuery?.data === 'skip') {
             await ctx.editMessageReplyMarkup();

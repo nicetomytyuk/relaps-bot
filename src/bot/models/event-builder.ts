@@ -100,7 +100,7 @@ export class EventBuilder {
         script += `🔰 Livello di Difficoltà: *${difficultyLevel}*\n`
 
         if (difficultyLevel?.toLowerCase() === 'difficile') {
-            script += "‼ *Questo percorso non è adatto ai principianti\\.*\n";
+            script += "❗️ *Questo percorso non è adatto ai principianti\\.*\n";
         }
 
         script += "\n"

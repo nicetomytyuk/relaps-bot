@@ -3,7 +3,7 @@ import { EventContext } from "../event-context.js";
 
 const sleep = async (miliseconds: number) => new Promise(resolve => setTimeout(resolve, miliseconds));
 
-const BOT_NAME = "relaps_test_bot";
+const BOT_NAME = "relaps_bot";
 
 export async function onHike(ctx: CommandContext<EventContext>) {
     const message = await ctx.reply('Benvenuto nel bot di escursionismo di @relaps_hiking!', {

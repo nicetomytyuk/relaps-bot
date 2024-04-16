@@ -13,14 +13,25 @@ export async function createPreview(builder: EventBuilder, conversation: EventCo
 
     const keyboard = new InlineKeyboard().text('Pubblica', 'publish').text('Annulla', 'cancel');
 
-    if (photoId) {
-        await ctx.replyWithPhoto(photoId, { caption: script, parse_mode: 'MarkdownV2' });
-    } else {
-        await ctx.reply(script, { parse_mode: 'MarkdownV2', link_preview_options: { is_disabled: true } });
+    try {
+        const MAX_CAPTION_LENGTH = 1024;
+        if (photoId) {
+            if (script.length > MAX_CAPTION_LENGTH) {
+                await ctx.reply("L'immagine è stata rimossa dato che il testo supera il limite dei 1024 caratteri!");
+                await ctx.reply(script, { parse_mode: 'MarkdownV2', link_preview_options: { is_disabled: true } });
+            }else {
+                await ctx.replyWithPhoto(photoId, { caption: script, parse_mode: 'MarkdownV2' });
+            }
+        } else {
+            await ctx.reply(script, { parse_mode: 'MarkdownV2', link_preview_options: { is_disabled: true } });
+        }
+    }catch (e) {
+        await ctx.reply('Non è stato possibile pubblicare l\'evento, riprova più tardi.');
     }
 
+
     if (invite !== null && invite !== 'none' && invite !== 'poll') {
-        const title = builder.getFullTitle().replace(/[-_.!]/g, '\\$&');
+        const title = builder.getFullTitle().replace(/[-_.!()]/g, '\\$&');
         await ctx.reply(`*[GRUPPO DELL'ESCURSIONE ${title}](${invite})*`, { parse_mode: 'MarkdownV2' });
     }
 
@@ -51,7 +62,11 @@ export async function createPreview(builder: EventBuilder, conversation: EventCo
         if (chat.type != "supergroup") {
             await ctx.reply(`L\`evento è stato pubblicato correttamente!`);
         } else {
-            await ctx.reply(`L\`evento è stato pubblicato correttamente in @${chat.username}!`);
+            if (chat.username) {
+                await ctx.reply(`L\`evento è stato pubblicato correttamente in @${chat.username}!`);
+            }else {
+                await ctx.reply(`L\`evento è stato pubblicato correttamente!`);
+            }
         }
     }
 

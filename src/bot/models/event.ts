@@ -8,6 +8,7 @@ export interface Event {
     difficultyLevel?: string;
     duration?: string;
     totalDistance?: string;
+    height?: string | null;
     equipment?: string[];
     itineraryUrl?: string;
     invitation?: string | null;

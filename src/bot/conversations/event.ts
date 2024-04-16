@@ -70,6 +70,24 @@ export async function createEvent(conversation: EventConversation, ctx: EventCon
     await ctx.reply('Inserisci la distanza totale dell\'evento (es., 10km):');
     builder.setDistance(await conversation.form.text());
 
+    await ctx.reply('Inserisci il dislivello positivo (es., 760m):', { reply_markup: skip });
+    do {
+        ctx = await conversation.waitFor([":text", "callback_query:data"]);
+        if (ctx.callbackQuery?.data === 'skip') {
+            await ctx.editMessageReplyMarkup();
+            await ctx.answerCallbackQuery();
+            break;
+        }
+
+        if (ctx.msg?.text) {
+            builder.setHeight(ctx.msg.text);
+            break;
+        }
+        
+        await ctx.reply('Per favore, inserisci un dislivello valido oppure salta il passaggio.', { reply_markup: skip });
+    } while (!ctx.msg?.text || ctx.callbackQuery?.data === 'skip');
+
+
     await ctx.reply('Inserisci l\'equipaggiamento necessario\n(es., Scarponi, Bastoncini):', { reply_markup: skip })
     do {
         ctx = await conversation.waitFor([":text", "callback_query:data"]);

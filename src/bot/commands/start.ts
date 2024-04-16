@@ -13,7 +13,11 @@ export async function onStart(ctx: CommandContext<EventContext>) {
     if (chat.type != "supergroup") {
         await ctx.reply(`Ti aiuterò a creare il tuo evento di escursionismo.`);
     } else {
-        await ctx.reply(`Stai per creare un evento per il gruppo @${chat.username}.`);
+        if (chat.username) {
+            await ctx.reply(`Stai per creare un evento per il gruppo @${chat.username}.`);
+        }else {
+            await ctx.reply(`Ti aiuterò a creare il tuo evento di escursionismo.`);
+        }
     }
 
     await ctx.conversation.enter("createEvent");

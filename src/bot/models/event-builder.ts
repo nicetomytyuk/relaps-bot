@@ -67,54 +67,65 @@ export class EventBuilder {
         this.event.invitation = invitation;
     }
 
+    setHeight(height: string | null) {
+        this.event.height = height;
+    }
+
     getInvite() {
         return this.event.invitation;
     }
 
     getFullTitle() {
-        return `${this.event.title?.toUpperCase()} - ${this.event.date}`;
+        return `${this.event.title?.toUpperCase()} - ${this.event.date?.toUpperCase()}`;
     }
 
     getPhotoId() {
         return this.event.photoId;
     }
 
+    private safeText(text: string | undefined | null): string | null {
+        return text?.replace(/[-_.!()]/g, '\\$&') ?? null;
+    }
+
     getEvent() {
-        const title = this.getFullTitle().replace(/[-_.!]/g, '\\$&');
+        const title = this.safeText(this.getFullTitle());
+        const description = this.safeText(this.event.description);
+        const date = this.safeText(this.event.date);
+        const startTime = this.safeText(this.event.startTime);
+        const difficultyLevel = this.safeText(this.event.difficultyLevel);
+        const duration = this.safeText(this.event.duration);
+        const distance = this.safeText(this.event.totalDistance);
+        const height = this.safeText(this.event.height);
+
         let script = `*${title}*\n\n`
-    
-        const description = this.event.description?.replace(/[-_.!]/g, '\\$&');
+
         if (description !== undefined && description !== null) {
             script += `_${description}_\n\n`
         }
     
-        const date = this.event.date?.replace(/[-_.!]/g, '\\$&');
         script += `📆 Data: *${date}*\n`
 
-        const startTime = this.event.startTime?.replace(/[-_.!]/g, '\\$&');
         script += `💨 Orario di Incontro e Partenza: *${startTime}*\n\n`
     
         script += `📍 [Punto di Incontro](${this.event.meetingPointUrl})\n\n`
 
-        const difficultyLevel = this.event.difficultyLevel?.replace(/[-_.!]/g, '\\$&');
         script += `🔰 Livello di Difficoltà: *${difficultyLevel}*\n`
-
-        if (difficultyLevel?.toLowerCase() === 'difficile') {
+        if (difficultyLevel?.toLowerCase().includes('difficile')) {
             script += "❗ *Questo percorso non è adatto ai principianti* ❗\n";
         }
 
         script += "\n"
     
-        const duration = this.event.duration?.replace(/[-_.!]/g, '\\$&');
         script += `⏳ Durata: *${duration}*\n`
-
-        const totalDistance = this.event.totalDistance?.replace(/[-_.!]/g, '\\$&');
-        script += `🗺 Distanza totale: *${totalDistance}*\n\n`
+        script += `🗺 Distanza totale: *${distance}*\n`
+        if (height) {
+            script += `🏔️ Dislivello positivo: *${height}*\n`
+        }
+        script += "\n"
     
         script += `🧥 Attrezzatura consigliata:\n\n`
-    
         for (let equipment of this.event.equipment || []) {
-            script += `• ${equipment.trim()}\n`
+            script += `• ${this.safeText(equipment.trim())}\n`
         }
         
         script += `\n`

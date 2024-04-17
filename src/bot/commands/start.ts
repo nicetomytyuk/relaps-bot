@@ -2,6 +2,8 @@ import { CommandContext } from "grammy";
 import { EventContext } from "../event-context.js";
 
 export async function onStart(ctx: CommandContext<EventContext>) {
+    console.log(`onStart called by ${ctx.from?.username}`);
+
     ctx.session.groupId = parseInt(ctx.match) || ctx.session.groupId;
 
     if (!ctx.session.groupId) {
@@ -20,5 +22,6 @@ export async function onStart(ctx: CommandContext<EventContext>) {
         }
     }
 
+    console.log(`Entering conversation for event creation with groupId: ${ctx.session.groupId}`);
     await ctx.conversation.enter("createEvent");
 }

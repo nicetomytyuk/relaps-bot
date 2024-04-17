@@ -29,8 +29,11 @@ export function createBot(token: string) {
 
     // Exit any existing conversation
     bot.chatType("private").command('start', async (ctx, next) => {
+        console.log(`Received /start from ${ctx.from?.username}`);
+
         const isConversationActive = await ctx.conversation.active();
         if (isConversationActive) {
+            console.log('Exiting active conversation');
             await ctx.conversation.exit();
         }
 

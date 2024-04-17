@@ -6,6 +6,8 @@ const sleep = async (miliseconds: number) => new Promise(resolve => setTimeout(r
 const BOT_NAME = "relaps_bot";
 
 export async function onHike(ctx: CommandContext<EventContext>) {
+    console.log(`onHike called by ${ctx.from?.username}`);
+    
     const message = await ctx.reply('Benvenuto nel bot di escursionismo di @relaps_hiking!', {
         reply_markup: {
             inline_keyboard: [

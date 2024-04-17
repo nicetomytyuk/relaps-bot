@@ -1,4 +1,4 @@
-import { Bot as TelegramBot, session } from "grammy";
+import { GrammyError, HttpError, Bot as TelegramBot, session } from "grammy";
 import { EventContext, SessionData } from "./event-context.js";
 
 import { autoRetry } from "@grammyjs/auto-retry";
@@ -10,12 +10,20 @@ import {
 import { createEvent } from "./conversations/event.js";
 import { freeStorage } from "@grammyjs/storage-free";
 import { onHike, onStart } from "./commands/index.js";
-import { checkIfAdmin, getSessionKey, logger } from "./middlewares/index.js";
+import { checkIfAdmin, getSessionKey } from "./middlewares/index.js";
 
 export function createBot(token: string) {
     const bot = new TelegramBot<EventContext>(token);
 
-    bot.use(logger);
+	bot.catch((err) => {
+        console.error(`Error while handling update ${err.ctx.update.update_id}:`);
+
+        err.error instanceof GrammyError
+            ? console.error('Error in request:', err.error.description)
+            : err.error instanceof HttpError
+            ? console.error('Could not contact Telegram:', err.error)
+            : console.error('Unknown error:', err.error);
+    });
 
     // Set the session middleware and initialize session data
     bot.use(session({ getSessionKey, initial: () => ({ groupId: 0 }), storage: freeStorage<SessionData>(bot.token) }));

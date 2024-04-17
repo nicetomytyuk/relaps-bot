@@ -1,6 +1,5 @@
 import { Bot as TelegramBot, session } from "grammy";
 import { EventContext, SessionData } from "./event-context.js";
-import { checkIfAdmin, checkIfGroup, checkIfPrivate, getSessionKey } from "./middlewares.js";
 
 import { autoRetry } from "@grammyjs/auto-retry";
 import {
@@ -11,9 +10,12 @@ import {
 import { createEvent } from "./conversations/event.js";
 import { freeStorage } from "@grammyjs/storage-free";
 import { onHike, onStart } from "./commands/index.js";
+import { checkIfAdmin, getSessionKey, logger } from "./middlewares/index.js";
 
 export function createBot(token: string) {
     const bot = new TelegramBot<EventContext>(token);
+
+    bot.use(logger);
 
     // Set the session middleware and initialize session data
     bot.use(session({ getSessionKey, initial: () => ({ groupId: 0 }), storage: freeStorage<SessionData>(bot.token) }));
@@ -22,7 +24,7 @@ export function createBot(token: string) {
     bot.api.config.use(autoRetry());
 
     // Create the callback to private chat with groupId payload
-    bot.chatType(["group", "supergroup"]).command('hike', checkIfGroup, checkIfAdmin, onHike);
+    bot.chatType(["group", "supergroup"]).command('hike', checkIfAdmin, onHike);
 
     // Install the conversations plugin.
     bot.chatType("private").use(conversations());
@@ -43,7 +45,7 @@ export function createBot(token: string) {
     bot.chatType("private").use(createConversation(createEvent));
 
     // Start the conversation for event creation
-    bot.chatType("private").command('start', checkIfPrivate, onStart);
+    bot.chatType("private").command('start', onStart);
 
     return bot;
 }

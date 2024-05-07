@@ -9,20 +9,20 @@ import {
 
 import { createEvent } from "./conversations/event.js";
 import { freeStorage } from "@grammyjs/storage-free";
-import { onHike, onStart } from "./commands/index.js";
+import { onHike, onNike, onStart } from "./commands/index.js";
 import { checkIfAdmin, getSessionKey } from "./middlewares/index.js";
 
 export function createBot(token: string) {
     const bot = new TelegramBot<EventContext>(token);
 
-	bot.catch((err) => {
+    bot.catch((err) => {
         console.error(`Error while handling update ${err.ctx.update.update_id}:`);
 
         err.error instanceof GrammyError
             ? console.error('Error in request:', err.error.description)
             : err.error instanceof HttpError
-            ? console.error('Could not contact Telegram:', err.error)
-            : console.error('Unknown error:', err.error);
+                ? console.error('Could not contact Telegram:', err.error)
+                : console.error('Unknown error:', err.error);
     });
 
     // Set the session middleware and initialize session data
@@ -30,6 +30,9 @@ export function createBot(token: string) {
 
     // Set the auto-retry middleware
     bot.api.config.use(autoRetry());
+
+    // Create the callback to private chat with groupId payload
+    bot.chatType(["group", "supergroup"]).command('nike', checkIfAdmin, onNike);
 
     // Create the callback to private chat with groupId payload
     bot.chatType(["group", "supergroup"]).command('hike', checkIfAdmin, onHike);

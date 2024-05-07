@@ -4,7 +4,7 @@ import {
 import { EventContext } from "../event-context.js";
 import { InlineKeyboard } from "grammy";
 import { createPreview } from "./preview.js";
-import { EventBuilder } from "../models/event-builder.js";
+import { EventBuilder, defaultEquipment } from "../models/event-builder.js";
 
 type EventConversation = Conversation<EventContext>;
 
@@ -87,8 +87,8 @@ export async function createEvent(conversation: EventConversation, ctx: EventCon
         await ctx.reply('Per favore, inserisci un dislivello valido oppure salta il passaggio.', { reply_markup: skip });
     } while (!ctx.msg?.text || ctx.callbackQuery?.data === 'skip');
 
-
-    await ctx.reply('Inserisci l\'equipaggiamento necessario\n(es., Scarponi, Bastoncini):', { reply_markup: skip })
+    await ctx.reply(`Attrezzatura predefinita:\n${defaultEquipment.map(equipment => `• ${equipment}`).join('\n')}`);
+    await ctx.reply('Inserisci l\'attrezzatura aggiuntiva:\n(es., Crema solare, Ramponcini)', { reply_markup: skip })
     do {
         ctx = await conversation.waitFor([":text", "callback_query:data"]);
         if (ctx.callbackQuery?.data === 'skip') {
@@ -103,7 +103,7 @@ export async function createEvent(conversation: EventConversation, ctx: EventCon
             builder.setEquipment(ctx.msg.text);
             break;
         }
-        await ctx.reply('Per favore, inserisci un valore valido per l\'equipaggiamento oppure salta il passaggio.', { reply_markup: skip });
+        await ctx.reply('Per favore, inserisci un valore valido per l\'attrezzatura oppure salta il passaggio.', { reply_markup: skip });
     } while (!ctx.msg?.text || ctx.callbackQuery?.data === 'skip')
         
     await ctx.reply('Inserisci l\'URL dell\'itinerario:');

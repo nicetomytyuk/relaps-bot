@@ -1,6 +1,6 @@
 import { Event } from "./event.js";
 
-const defaultEquipment = [
+export const defaultEquipment = [
     'Scarponi da Trekking',
     'Abbigliamento adatto alle condizioni climatiche',
     'Bastoncini da Trekking',
@@ -55,7 +55,12 @@ export class EventBuilder {
         if (!equipment) {
             this.event.equipment = [...defaultEquipment];
         } else {
-            this.event.equipment = [...defaultEquipment, ...equipment.split(',')];
+            this.event.equipment = [
+                ...defaultEquipment,
+                ...equipment.split(',')
+                    .map((item) => item.trim())
+                    .map(this.capitalize)
+            ];
         }
     }
 
@@ -83,6 +88,10 @@ export class EventBuilder {
         return this.event.photoId;
     }
 
+    private capitalize(word: string): string {
+        return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+    }
+
     private safeText(text: string | undefined | null): string | null {
         return text?.replace(/[-_.!()]/g, '\\$&') ?? null;
     }
@@ -97,7 +106,8 @@ export class EventBuilder {
         const distance = this.safeText(this.event.totalDistance);
         const height = this.safeText(this.event.height);
 
-        let script = `*${title}*\n\n`
+        let script = "__*ORGANIZZATO DA RELAPS HIKING*__\n\n"
+        script += `*${title}*\n\n`
 
         if (description !== undefined && description !== null) {
             script += `_${description}_\n\n`
@@ -139,6 +149,8 @@ export class EventBuilder {
         script += "‼️ *È dovere dell'interessato/a valutare, secondo il suo livello di preparazione, se è in grado di affrontare il percorso o meno\\.*\n\n"
         
         script += "⚠️ __*Attenzione: Questa escursione è riservata esclusivamente a partecipanti maggiorenni\\.*__\n\n";
+
+        script += "✅ Questa è un'attivita organizzata ufficialmente da Relaps Hiking\\!"
 
         return script;
     }

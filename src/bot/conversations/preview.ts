@@ -29,7 +29,6 @@ export async function createPreview(builder: EventBuilder, conversation: EventCo
         await ctx.reply('Non è stato possibile pubblicare l\'evento, riprova più tardi.');
     }
 
-
     if (invite !== null && invite !== 'none' && invite !== 'poll') {
         const title = builder.getFullTitle().replace(/[-_.!()]/g, '\\$&');
         await ctx.reply(`*[GRUPPO DELL'ESCURSIONE ${title}](${invite})*`, { parse_mode: 'MarkdownV2' });
@@ -55,18 +54,22 @@ export async function createPreview(builder: EventBuilder, conversation: EventCo
     await response.answerCallbackQuery();
 
     if (response.match === 'publish') {
-        await publish(builder, ctx);
-        await response.deleteMessage();
-
-        const chat = await ctx.api.getChat(ctx.session.groupId);
-        if (chat.type != "supergroup") {
-            await ctx.reply(`L\`evento è stato pubblicato correttamente!`);
-        } else {
-            if (chat.username) {
-                await ctx.reply(`L\`evento è stato pubblicato correttamente in @${chat.username}!`);
-            }else {
+        try {
+            await publish(builder, ctx);
+            await response.deleteMessage();
+    
+            const chat = await ctx.api.getChat(ctx.session.groupId);
+            if (chat.type != "supergroup") {
                 await ctx.reply(`L\`evento è stato pubblicato correttamente!`);
+            } else {
+                if (chat.username) {
+                    await ctx.reply(`L\`evento è stato pubblicato correttamente in @${chat.username}!`);
+                }else {
+                    await ctx.reply(`L\`evento è stato pubblicato correttamente!`);
+                }
             }
+        }catch (e) {
+            console.error(e);
         }
     }
 

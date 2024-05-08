@@ -93,7 +93,7 @@ export class EventBuilder {
     }
 
     private safeText(text: string | undefined | null): string | null {
-        return text?.replace(/[-_.!()]/g, '\\$&') ?? null;
+        return text?.replace(/[_*[\]()~`>#+\-=|{}.!]/g, '\\$&') ?? null;
     }
 
     getEvent() {

@@ -77,6 +77,5 @@ export async function createPreview(builder: EventBuilder, conversation: EventCo
         await ctx.reply('L\'evento è stato annullato.');
         await ctx.reply('Inizia di nuovo la creazione dell\'evento inviando /start.');
         await response.deleteMessage();
-        return;
     }
 }

@@ -138,6 +138,4 @@ export async function createEvent(conversation: EventConversation, ctx: EventCon
     }
 
     await createPreview(builder, conversation, ctx);
-
-    return;
 }

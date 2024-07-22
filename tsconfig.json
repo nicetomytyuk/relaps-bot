@@ -10,7 +10,7 @@
     "moduleResolution": "NodeNext",
     "sourceMap": true,
     "outDir": "build",
-    "rootDir": ".",
+    "rootDir": "./src",
     "paths": {
       "#root/*": [
         "./src/*"

@@ -1,18 +1,20 @@
-import { fastify } from "fastify";
+import Fastify from "fastify";
 import { webhookCallback } from "grammy";
 import { Bot } from "../bot/index.js";
 import { config } from "../config.js";
 
 export const createServer = async (bot: Bot) => {
-    const server = fastify();
+    const server = Fastify({
+      logger: true
+    });
   
     server.setErrorHandler(async (error, request, response) => {
       await response.status(500).send({ error: "Oops! Something went wrong." });
     });
   
     server.get('/', async function handler (request, reply) {
-      return { success: true }
-    })
+      return "Relaps bot is working!"
+    });
   
     server.get(`/${bot.token}`, async (request, response) => {
       const hostname = request.headers["x-forwarded-host"];

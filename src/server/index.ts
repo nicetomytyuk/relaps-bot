@@ -1,7 +1,7 @@
-import { Bot } from "#root/bot/index.js";
-import { config } from "#root/config.js";
 import { fastify } from "fastify";
 import { webhookCallback } from "grammy";
+import { Bot } from "../bot/index.js";
+import { config } from "../config.js";
 
 export const createServer = async (bot: Bot) => {
     const server = fastify();

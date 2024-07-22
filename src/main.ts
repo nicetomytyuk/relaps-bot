@@ -9,6 +9,9 @@ try {
   const bot = createBot(config.BOT_TOKEN);
   const server = await createServer(bot);
 
+  process.once("SIGINT", () => bot.stop());
+  process.once("SIGTERM", () => bot.stop());  
+
   // Graceful shutdown
   onShutdown(async () => {
     await server.close();

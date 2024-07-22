@@ -10,12 +10,7 @@
     "moduleResolution": "NodeNext",
     "sourceMap": true,
     "outDir": "build",
-    "rootDir": "./src",
-    "paths": {
-      "#root/*": [
-        "./src/*"
-      ]
-    }
+    "rootDir": "./src"
   },
   "include": [
     "api/**/*",

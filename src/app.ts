@@ -19,7 +19,7 @@ try {
   });
 
   await server.listen({
-    port: 8000,
+    port: 3000,
   });
 
   if (config.BOT_MODE === "webhook") {

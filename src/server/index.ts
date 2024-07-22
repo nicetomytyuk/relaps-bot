@@ -10,7 +10,9 @@ export const createServer = async (bot: Bot) => {
       await response.status(500).send({ error: "Oops! Something went wrong." });
     });
   
-    server.get("/", () => ({ status: true }));
+    server.get('/', async function handler (request, reply) {
+      return { success: true }
+    })
   
     server.get(`/${bot.token}`, async (request, response) => {
       const hostname = request.headers["x-forwarded-host"];

@@ -9,7 +9,7 @@
     "target": "ES2021",
     "moduleResolution": "NodeNext",
     "sourceMap": true,
-    "outDir": "build",
+    "outDir": "./build",
     "rootDir": "./src"
   },
   "include": [

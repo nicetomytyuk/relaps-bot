@@ -23,8 +23,7 @@ try {
     await bot.init();
 
     await server.listen({
-      host: config.BOT_SERVER_HOST,
-      port: config.BOT_SERVER_PORT,
+      port: 8000,
     });
 
     await bot.api.setWebhook(config.BOT_WEBHOOK, {

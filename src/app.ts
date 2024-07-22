@@ -1,9 +1,9 @@
 #!/usr/bin/env tsx
 
 import { onShutdown } from "node-graceful-shutdown";
-import { createBot } from "./bot/index.js";
 import { createServer } from "./server/index.js";
 import { config } from "./config.js";
+import { createBot } from "./bot/index.js";
 
 try {
   const bot = createBot(config.BOT_TOKEN);

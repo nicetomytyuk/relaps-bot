@@ -3,12 +3,9 @@
   "version": "1.0.0",
   "description": "Telegram bot that will work as script builder for relaps",
   "type": "module",
-  "imports": {
-    "#root/*": "./build/src/*"
-  },
   "scripts": {
     "build": "tsc --noEmit false",
-    "dev": "tsc-watch --onSuccess \"tsx ./src/main.ts\"",
+    "dev": "tsc-watch --onSuccess \"tsx ./src/app.ts\"",
     "start": "node ./build/app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

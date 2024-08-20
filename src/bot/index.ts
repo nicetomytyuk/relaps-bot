@@ -9,11 +9,15 @@ import {
 
 import { createEvent } from "./conversations/event.js";
 import { freeStorage } from "@grammyjs/storage-free";
-import { onHike, onNike, onStart } from "./commands/index.js";
+import { hikeFactory, onNike, onStart } from "./commands/index.js";
 import { checkIfAdmin, getSessionKey } from "./middlewares/index.js";
+import { Commands } from "@grammyjs/commands";
 
 export function createBot(token: string) {
     const bot = new TelegramBot<EventContext>(token);
+
+    const commands = new Commands<EventContext>({ ignoreCase: true });
+    hikeFactory(commands);
 
     bot.catch((err) => {
         console.error(`Error while handling update ${err.ctx.update.update_id}:`);
@@ -32,10 +36,8 @@ export function createBot(token: string) {
     bot.api.config.use(autoRetry());
 
     // Create the callback to private chat with groupId payload
-    bot.chatType(["group", "supergroup"]).command('nike', checkIfAdmin, onNike);
 
-    // Create the callback to private chat with groupId payload
-    bot.chatType(["group", "supergroup"]).command('hike', checkIfAdmin, onHike);
+    bot.chatType(["group", "supergroup"]).command('nike', checkIfAdmin, onNike);
 
     // Install the conversations plugin.
     bot.chatType("private").use(conversations());

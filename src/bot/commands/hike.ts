@@ -1,11 +1,11 @@
-import { CommandContext } from "grammy";
+import { ChatTypeContext } from "grammy";
 import { EventContext } from "../event-context.js";
-
-const sleep = async (miliseconds: number) => new Promise(resolve => setTimeout(resolve, miliseconds));
+import { sleep } from "../utils/utils.js";
+import { Commands } from "@grammyjs/commands";
 
 const BOT_NAME = "relaps_bot";
 
-export async function onHike(ctx: CommandContext<EventContext>) {
+async function onHike(ctx: ChatTypeContext<EventContext, "group" | "supergroup">) {
     console.log(`onHike called by ${ctx.from?.username}`);
     
     const message = await ctx.reply('Benvenuto nel bot di escursionismo di @relaps_hiking!', {
@@ -23,4 +23,12 @@ export async function onHike(ctx: CommandContext<EventContext>) {
     } catch (e) {
         console.log(e);
     }
+}
+
+export const hikeFactory = (commands: Commands<EventContext>) => {
+    commands.command("hike", "Crea il tuo evento di escursionismo")
+    .addToScope(
+        { type: "all_chat_administrators" },
+        onHike
+    );
 }
